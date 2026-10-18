@@ -1,0 +1,7 @@
+# Overview
+
+This application is designed to empower citizens to actively participate in improving civic
+infrastructure and services within Mumbai. It provides a transparent platform where citizens can
+report issues, track their resolution, and request civic facilities, all while maintaining anonymity for
+safety. The application bridges the gap between residents and municipal authorities, ensuring
+accountability and timely action.

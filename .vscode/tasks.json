@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start All (Frontend & Backend)",
+      "type": "npm",
+      "script": "dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Start Frontend",
+      "type": "npm",
+      "script": "dev:frontend",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Start Backend",
+      "type": "npm",
+      "script": "dev:backend",
+      "problemMatcher": [],
+      "isBackground": true
+    }
+  ]
+}
