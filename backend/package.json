@@ -1,13 +1,17 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.3",
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "@aws-sdk/client-sns": "^3.1152.0",
     "@turf/turf": "^7.3.4",
+    "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "pg": "^8.23.1"
   },
   "name": "apleshaharbackend",
   "version": "1.0.0",

@@ -1,5 +1,10 @@
-import supabase from "../config/supabaseClient.js"
+import { query } from "../config/db.js";
 
 export const getTestData = async () => {
-  return await supabase.from("test").select("*")
-}
+  try {
+    const { rows } = await query("SELECT 1 AS status;");
+    return rows;
+  } catch (err) {
+    return [{ status: "Database not connected yet", error: err.message }];
+  }
+};

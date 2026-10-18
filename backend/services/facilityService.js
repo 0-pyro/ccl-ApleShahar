@@ -1,95 +1,72 @@
-import supabaseAdmin from '../config/supabaseAdmin.js';
+import { query } from '../config/db.js';
 
-async function createFacilityRequest(citizenId, facilityType, reason, wardNo, imageUrl, coords) {
-  const { data, error } = await supabaseAdmin
-    .from('facility_requests')
-    .insert({
-      citizen_id: citizenId,
-      facility_type: facilityType,
-      request_reason: reason,
-      ward: parseInt(wardNo),
-      image_link: imageUrl,
-      location_coords: coords,
-      status: 'pending'
-    })
-    .select()
-    .single();
+export async function createFacilityRequest(citizenId, facilityType, reason, wardNo, imageUrl, coords) {
+  const sql = `
+    INSERT INTO facility_requests (
+      citizen_id,
+      facility_type,
+      request_reason,
+      ward,
+      image_link,
+      location_coords,
+      status
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+    RETURNING *;
+  `;
 
-  if (error) throw error;
-  return data;
+  const { rows } = await query(sql, [
+    citizenId,
+    facilityType,
+    reason,
+    parseInt(wardNo, 10),
+    imageUrl,
+    coords ? (typeof coords === 'object' ? JSON.stringify(coords) : String(coords)) : null,
+  ]);
+
+  return rows[0];
 }
 
-async function getAllFacilityRequests(wardFilter) {
-  let query = supabaseAdmin
-    .from('facility_requests')
-    .select('*')
-    .order('created_at', { ascending: false });
+export async function getAllFacilityRequests(wardFilter) {
+  let sql = 'SELECT * FROM facility_requests';
+  const params = [];
 
   if (wardFilter) {
-    query = query.eq('ward', parseInt(wardFilter));
+    sql += ' WHERE ward = $1';
+    params.push(parseInt(wardFilter, 10));
   }
 
-  const { data, error } = await query;
-  if (error) throw error;
-  return data;
+  sql += ' ORDER BY created_at DESC;';
+  const { rows } = await query(sql, params);
+  return rows;
 }
 
-async function getMyFacilityRequests(citizenId) {
-  const { data, error } = await supabaseAdmin
-    .from('facility_requests')
-    .select('*')
-    .eq('citizen_id', citizenId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+export async function getMyFacilityRequests(citizenId) {
+  const sql = 'SELECT * FROM facility_requests WHERE citizen_id = $1 ORDER BY created_at DESC;';
+  const { rows } = await query(sql, [citizenId]);
+  return rows;
 }
 
-async function getFacilityRequestById(requestId) {
-  const { data, error } = await supabaseAdmin
-    .from('facility_requests')
-    .select('*')
-    .eq('request_id', requestId)
-    .single();
-
-  if (error) throw error;
-  return data;
+export async function getFacilityRequestById(requestId) {
+  const sql = 'SELECT * FROM facility_requests WHERE id = $1;';
+  const { rows } = await query(sql, [requestId]);
+  return rows[0] || null;
 }
 
-async function getFacilityRequestsByWard(wardNo) {
-  const { data, error } = await supabaseAdmin
-    .from('facility_requests')
-    .select('*')
-    .eq('ward', parseInt(wardNo))
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+export async function getFacilityRequestsByWard(wardNo) {
+  const sql = 'SELECT * FROM facility_requests WHERE ward = $1 ORDER BY created_at DESC;';
+  const { rows } = await query(sql, [parseInt(wardNo, 10)]);
+  return rows;
 }
 
-async function updateFacilityStatus(requestId, status, rejectReason) {
-  const updateData = { status };
+export async function updateFacilityStatus(requestId, status, rejectReason) {
+  const sql = `
+    UPDATE facility_requests
+    SET status = $1, reject_reason = $2
+    WHERE id = $3
+    RETURNING *;
+  `;
 
-  if (status === 'rejected' && rejectReason) {
-    updateData.reject_reason = rejectReason;
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from('facility_requests')
-    .update(updateData)
-    .eq('request_id', requestId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const { rows } = await query(sql, [status, rejectReason || null, requestId]);
+  return rows[0];
 }
-
-export {
-  createFacilityRequest,
-  getAllFacilityRequests,
-  getMyFacilityRequests,
-  getFacilityRequestById,
-  getFacilityRequestsByWard,
-  updateFacilityStatus
-};

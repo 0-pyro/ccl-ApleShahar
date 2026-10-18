@@ -1,84 +1,111 @@
-import supabaseAdmin from '../config/supabaseAdmin.js';
+import { query } from '../config/db.js';
+import { sendComplaintAlert, sendResolutionAlert } from './notificationService.js';
 
-async function createComplaint(citizenId, imageUrl, description, wardNo, coords, issueType) {
-  const { data, error } = await supabaseAdmin
-    .from('complaints')
-    .insert({
-      citizen_id: citizenId,
-      image_link: imageUrl,
-      prob_description: description,
-      ward: parseInt(wardNo),
-      location_coords: coords,
-      issue_type: issueType, 
-      status: 'pending'
-    })
-    .select()
-    .single();
+export async function createComplaint(citizenId, imageUrl, description, wardNo, coords, issueType) {
+  const sql = `
+    INSERT INTO complaints (
+      citizen_id,
+      image_link,
+      prob_description,
+      ward,
+      location_coords,
+      issue_type,
+      status
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+    RETURNING *;
+  `;
 
-  if (error) throw error;
-  return data;
+  const { rows } = await query(sql, [
+    citizenId,
+    imageUrl,
+    description,
+    parseInt(wardNo, 10),
+    coords ? (typeof coords === 'object' ? JSON.stringify(coords) : String(coords)) : null,
+    issueType,
+  ]);
+
+  const newComplaint = rows[0];
+
+  // Asynchronously publish alert via AWS SNS (does not block response)
+  sendComplaintAlert(newComplaint).catch((err) =>
+    console.warn('SNS alert failed:', err.message)
+  );
+
+  return newComplaint;
 }
 
-async function getComplaintsByWard(wardNo) {
-  const { data, error } = await supabaseAdmin
-    .from('complaints')
-    .select('*')
-    .eq('ward', wardNo)
-    .order('created_at', { ascending: false });
+export async function getAllComplaints(wardFilter) {
+  let sql = 'SELECT * FROM complaints';
+  const params = [];
 
-  if (error) throw error;
-  return data;
+  if (wardFilter) {
+    sql += ' WHERE ward = $1';
+    params.push(parseInt(wardFilter, 10));
+  }
+
+  sql += ' ORDER BY created_at DESC;';
+  const { rows } = await query(sql, params);
+  return rows;
 }
 
-async function getMyComplaints(citizenId) {
-  const { data, error } = await supabaseAdmin
-    .from('complaints')
-    .select('*')
-    .eq('citizen_id', citizenId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+export async function getComplaintsByWard(wardNo) {
+  const sql = 'SELECT * FROM complaints WHERE ward = $1 ORDER BY created_at DESC;';
+  const { rows } = await query(sql, [parseInt(wardNo, 10)]);
+  return rows;
 }
 
-async function getComplaintById(complaintId) {
-  const { data, error } = await supabaseAdmin
-    .from('complaints')
-    .select('*')
-    .eq('id', complaintId)
-    .single();
-
-  if (error) throw error;
-  return data;
+export async function getMyComplaints(citizenId) {
+  const sql = 'SELECT * FROM complaints WHERE citizen_id = $1 ORDER BY created_at DESC;';
+  const { rows } = await query(sql, [citizenId]);
+  return rows;
 }
 
-async function updateComplaintStatus(complaintId, status, estimatedTime) {
-  const { data, error } = await supabaseAdmin
-    .from('complaints')
-    .update({ status, estimated_time: estimatedTime })
-    .eq('id', complaintId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+export async function getComplaintById(complaintId) {
+  const sql = 'SELECT * FROM complaints WHERE id = $1;';
+  const { rows } = await query(sql, [complaintId]);
+  return rows[0] || null;
 }
 
-async function resolveComplaint(complaintId, resolveDescription, resolveImageUrl) {
-  const { data, error } = await supabaseAdmin
-    .from('complaints')
-    .update({
-      status: 'resolved',
-      resolve_description: resolveDescription,
-      resolve_image: resolveImageUrl,
-      resolved_at: new Date().toISOString()
-    })
-    .eq('id', complaintId)
-    .select()
-    .single();
+export async function updateComplaintStatus(complaintId, status, estimatedTime) {
+  const sql = `
+    UPDATE complaints
+    SET status = $1, estimated_time = $2, updated_at = NOW()
+    WHERE id = $3
+    RETURNING *;
+  `;
+  const { rows } = await query(sql, [status, estimatedTime || null, complaintId]);
+  return rows[0];
+}
 
-  if (error) throw error;
-  return data;
+export async function resolveComplaint(complaintId, resolveDescription, resolveImageUrl) {
+  const sql = `
+    UPDATE complaints
+    SET 
+      status = 'resolved',
+      resolve_description = $1,
+      resolve_image = $2,
+      resolved_at = NOW(),
+      updated_at = NOW()
+    WHERE id = $3
+    RETURNING *;
+  `;
+  const { rows } = await query(sql, [
+    resolveDescription || '',
+    resolveImageUrl || null,
+    complaintId,
+  ]);
+
+  const resolved = rows[0];
+
+  // Asynchronously dispatch resolution alert
+  if (resolved) {
+    sendResolutionAlert(resolved).catch((err) =>
+      console.warn('SNS resolution alert failed:', err.message)
+    );
+  }
+
+  return resolved;
 }
 
 /**
@@ -86,42 +113,14 @@ async function resolveComplaint(complaintId, resolveDescription, resolveImageUrl
  * satisfied=true  → status becomes 'closed' (permanently locked)
  * satisfied=false → status becomes 'pending' (complaint re-initiated)
  */
-async function citizenSatisfaction(complaintId, satisfied) {
+export async function citizenSatisfaction(complaintId, satisfied) {
   const newStatus = satisfied ? 'closed' : 'pending';
-  const { data, error } = await supabaseAdmin
-    .from('complaints')
-    .update({ status: newStatus })
-    .eq('id', complaintId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const sql = `
+    UPDATE complaints
+    SET status = $1, updated_at = NOW()
+    WHERE id = $2
+    RETURNING *;
+  `;
+  const { rows } = await query(sql, [newStatus, complaintId]);
+  return rows[0];
 }
-
-
-async function getAllComplaints(wardFilter) {
-  let query = supabaseAdmin
-    .from('complaints')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (wardFilter) {
-    query = query.eq('ward', wardFilter);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data;
-}
-
-export {
-  createComplaint,
-  getComplaintsByWard,
-  getMyComplaints,
-  getComplaintById,
-  updateComplaintStatus,
-  resolveComplaint,
-  citizenSatisfaction,
-  getAllComplaints
-};

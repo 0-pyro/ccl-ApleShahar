@@ -1,41 +1,39 @@
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
-import supabaseAdmin from "../config/supabaseAdmin.js"
+import jwt from 'jsonwebtoken';
+import { query } from '../config/db.js';
 
-dotenv.config()
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-)
+const JWT_SECRET = process.env.JWT_SECRET || 'apleshahar-jwt-production-secret-key';
 
 export const protect = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization
+    const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "No token provided" })
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
     }
 
-    const token = authHeader.split(" ")[1]
+    const token = authHeader.split(' ')[1];
+    let decoded;
 
-    const { data, error } = await supabase.auth.getUser(token)
-
-    if (error || !data.user) {
-      return res.status(401).json({ error: "Invalid token" })
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (jwtErr) {
+      return res.status(401).json({ error: 'Invalid or expired session token' });
     }
 
-    req.user = data.user
-    const { data: userData } = await supabaseAdmin
-      .from("users")
-      .select("role")
-      .eq("id", data.user.id)
-      .single()
+    const result = await query(
+      'SELECT id, email, name, role, ward_no FROM users WHERE id = $1',
+      [decoded.id]
+    );
 
-    req.userRole = userData?.role
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'User account no longer exists' });
+    }
 
-    next()
+    req.user = result.rows[0];
+    req.userRole = result.rows[0].role;
+
+    next();
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message });
   }
-}
+};
