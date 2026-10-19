@@ -96,7 +96,7 @@ if ($Region -eq "us-east-1") {
 # Disable block public access
 aws s3api put-public-access-block --bucket $BucketName --public-access-block-configuration "BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false" --region $Region
 
-# Write S3 Bucket Policy to temp file to prevent PowerShell CLI quote-mangling
+# Write S3 Bucket Policy to temp file (ASCII - no BOM)
 $TempPolicyFile = [System.IO.Path]::GetTempFileName()
 $BucketPolicy = @"
 {
@@ -112,11 +112,11 @@ $BucketPolicy = @"
   ]
 }
 "@
-$BucketPolicy | Set-Content -Path $TempPolicyFile -Encoding utf8
+[System.IO.File]::WriteAllText($TempPolicyFile, $BucketPolicy, [System.Text.Encoding]::ASCII)
 aws s3api put-bucket-policy --bucket $BucketName --policy file://$TempPolicyFile --region $Region
 Remove-Item -Force $TempPolicyFile
 
-# Write CORS configuration to temp file
+# Write CORS configuration to temp file (ASCII - no BOM)
 $TempCorsFile = [System.IO.Path]::GetTempFileName()
 $CorsConfig = @"
 {
@@ -130,7 +130,7 @@ $CorsConfig = @"
   ]
 }
 "@
-$CorsConfig | Set-Content -Path $TempCorsFile -Encoding utf8
+[System.IO.File]::WriteAllText($TempCorsFile, $CorsConfig, [System.Text.Encoding]::ASCII)
 aws s3api put-bucket-cors --bucket $BucketName --cors-configuration file://$TempCorsFile --region $Region
 Remove-Item -Force $TempCorsFile
 
@@ -156,7 +156,7 @@ $TrustPolicy = @"
   ]
 }
 "@
-$TrustPolicy | Set-Content -Path $TempTrustFile -Encoding utf8
+[System.IO.File]::WriteAllText($TempTrustFile, $TrustPolicy, [System.Text.Encoding]::ASCII)
 
 try {
     aws iam create-role --role-name $RoleName --assume-role-policy-document file://$TempTrustFile | Out-Null
@@ -187,7 +187,7 @@ $AppPolicy = @"
   ]
 }
 "@
-$AppPolicy | Set-Content -Path $TempAppPolicyFile -Encoding utf8
+[System.IO.File]::WriteAllText($TempAppPolicyFile, $AppPolicy, [System.Text.Encoding]::ASCII)
 aws iam put-role-policy --role-name $RoleName --policy-name "ApleShaharAppPermissions" --policy-document file://$TempAppPolicyFile
 Remove-Item -Force $TempAppPolicyFile
 
