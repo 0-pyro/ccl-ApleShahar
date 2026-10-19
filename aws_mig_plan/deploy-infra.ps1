@@ -4,10 +4,10 @@
 # This script provisions:
 # 1. Custom VPC (10.0.0.0/16), IGW, Public Subnet, 2 Private Subnets, Route Tables
 # 2. Tiered Security Groups (EC2 & RDS)
-# 3. Amazon RDS PostgreSQL (db.t3.micro, Single-AZ, 20GB Free Tier)
-# 4. Amazon S3 Bucket with Public Read & CORS
-# 5. IAM Role & Instance Profile for EC2 (Least Privilege)
-# 6. Amazon SNS Topic & Email Subscription
+# 3. Amazon S3 Bucket with Public Read & CORS
+# 4. IAM Role & Instance Profile for EC2 (Least Privilege)
+# 5. Amazon SNS Topic & Email Subscription
+# 6. Amazon RDS PostgreSQL (db.t3.micro, Single-AZ, 20GB Free Tier)
 # 7. CloudWatch Alarm for CPU > 75%
 # ==============================================================================
 
@@ -20,7 +20,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n🚀 Starting ApleShahar AWS Infrastructure Automation..." -ForegroundColor Cyan
+Write-Host "Starting ApleShahar AWS Infrastructure Automation..." -ForegroundColor Cyan
 Write-Host "Region: $Region"
 Write-Host "Alert Email: $AlertEmail"
 
@@ -36,12 +36,12 @@ Write-Host "`n[1/7] Creating Custom VPC & Subnets..." -ForegroundColor Yellow
 $VpcId = (aws ec2 create-vpc --cidr-block 10.0.0.0/16 --region $Region --output json | ConvertFrom-Json).Vpc.VpcId
 aws ec2 create-tags --resources $VpcId --tags Key=Name,Value=apleshahar-vpc --region $Region
 aws ec2 modify-vpc-attribute --vpc-id $VpcId --enable-dns-hostnames "{\`"Value\`":true}" --region $Region
-Write-Host "✅ VPC Created: $VpcId"
+Write-Host "VPC Created: $VpcId"
 
 $IgwId = (aws ec2 create-internet-gateway --region $Region --output json | ConvertFrom-Json).InternetGateway.InternetGatewayId
 aws ec2 attach-internet-gateway --vpc-id $VpcId --internet-gateway-id $IgwId --region $Region
 aws ec2 create-tags --resources $IgwId --tags Key=Name,Value=apleshahar-igw --region $Region
-Write-Host "✅ Internet Gateway Created & Attached: $IgwId"
+Write-Host "Internet Gateway Created & Attached: $IgwId"
 
 # Public Subnet in ap-south-1a
 $PublicSubnetId = (aws ec2 create-subnet --vpc-id $VpcId --cidr-block 10.0.1.0/24 --availability-zone "${Region}a" --region $Region --output json | ConvertFrom-Json).Subnet.SubnetId
@@ -61,7 +61,7 @@ $PublicRouteTableId = (aws ec2 create-route-table --vpc-id $VpcId --region $Regi
 aws ec2 create-route --route-table-id $PublicRouteTableId --destination-cidr-block 0.0.0.0/0 --gateway-id $IgwId --region $Region | Out-Null
 aws ec2 associate-route-table --subnet-id $PublicSubnetId --route-table-id $PublicRouteTableId --region $Region | Out-Null
 aws ec2 create-tags --resources $PublicRouteTableId --tags Key=Name,Value=apleshahar-public-rt --region $Region
-Write-Host "✅ Subnets & Routing configured."
+Write-Host "Subnets & Routing configured."
 
 # ------------------------------------------------------------------------------
 # 2. Security Groups
@@ -74,13 +74,13 @@ aws ec2 authorize-security-group-ingress --group-id $Ec2SgId --protocol tcp --po
 aws ec2 authorize-security-group-ingress --group-id $Ec2SgId --protocol tcp --port 443 --cidr 0.0.0.0/0 --region $Region | Out-Null
 aws ec2 authorize-security-group-ingress --group-id $Ec2SgId --protocol tcp --port 22 --cidr 0.0.0.0/0 --region $Region | Out-Null
 aws ec2 create-tags --resources $Ec2SgId --tags Key=Name,Value=apleshahar-ec2-sg --region $Region
-Write-Host "✅ EC2 Security Group: $Ec2SgId"
+Write-Host "EC2 Security Group: $Ec2SgId"
 
 # RDS Security Group (Allows 5432 ONLY from EC2 SG)
 $RdsSgId = (aws ec2 create-security-group --group-name apleshahar-rds-sg --description "Security group for RDS PostgreSQL" --vpc-id $VpcId --region $Region --output json | ConvertFrom-Json).GroupId
 aws ec2 authorize-security-group-ingress --group-id $RdsSgId --protocol tcp --port 5432 --source-group $Ec2SgId --region $Region | Out-Null
 aws ec2 create-tags --resources $RdsSgId --tags Key=Name,Value=apleshahar-rds-sg --region $Region
-Write-Host "✅ RDS Security Group: $RdsSgId (Inbound 5432 restricted to EC2 SG)"
+Write-Host "RDS Security Group: $RdsSgId (Inbound 5432 restricted to EC2 SG)"
 
 # ------------------------------------------------------------------------------
 # 3. Amazon S3 Bucket & CORS
@@ -96,7 +96,8 @@ if ($Region -eq "us-east-1") {
 # Disable block public access
 aws s3api put-public-access-block --bucket $BucketName --public-access-block-configuration "BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false" --region $Region
 
-# Bucket Policy for Public Read of images
+# Write S3 Bucket Policy to temp file to prevent PowerShell CLI quote-mangling
+$TempPolicyFile = [System.IO.Path]::GetTempFileName()
 $BucketPolicy = @"
 {
   "Version": "2012-10-17",
@@ -111,9 +112,12 @@ $BucketPolicy = @"
   ]
 }
 "@
-aws s3api put-bucket-policy --bucket $BucketName --policy $BucketPolicy --region $Region
+$BucketPolicy | Set-Content -Path $TempPolicyFile -Encoding utf8
+aws s3api put-bucket-policy --bucket $BucketName --policy file://$TempPolicyFile --region $Region
+Remove-Item -Force $TempPolicyFile
 
-# CORS configuration
+# Write CORS configuration to temp file
+$TempCorsFile = [System.IO.Path]::GetTempFileName()
 $CorsConfig = @"
 {
   "CORSRules": [
@@ -126,8 +130,11 @@ $CorsConfig = @"
   ]
 }
 "@
-aws s3api put-bucket-cors --bucket $BucketName --cors-configuration $CorsConfig --region $Region
-Write-Host "✅ S3 Bucket configured with public read & CORS."
+$CorsConfig | Set-Content -Path $TempCorsFile -Encoding utf8
+aws s3api put-bucket-cors --bucket $BucketName --cors-configuration file://$TempCorsFile --region $Region
+Remove-Item -Force $TempCorsFile
+
+Write-Host "S3 Bucket configured with public read & CORS."
 
 # ------------------------------------------------------------------------------
 # 4. IAM Role & Instance Profile for EC2
@@ -135,6 +142,8 @@ Write-Host "✅ S3 Bucket configured with public read & CORS."
 Write-Host "`n[4/7] Creating IAM Role & Instance Profile (Least Privilege)..." -ForegroundColor Yellow
 
 $RoleName = "ApleShahar-EC2-BackendRole"
+
+$TempTrustFile = [System.IO.Path]::GetTempFileName()
 $TrustPolicy = @"
 {
   "Version": "2012-10-17",
@@ -147,18 +156,20 @@ $TrustPolicy = @"
   ]
 }
 "@
+$TrustPolicy | Set-Content -Path $TempTrustFile -Encoding utf8
 
-# Create role
 try {
-    aws iam create-role --role-name $RoleName --assume-role-policy-document $TrustPolicy | Out-Null
+    aws iam create-role --role-name $RoleName --assume-role-policy-document file://$TempTrustFile | Out-Null
 } catch {
     Write-Host "Role may already exist, proceeding..."
 }
+Remove-Item -Force $TempTrustFile
 
 # Attach SSM session manager policy
 aws iam attach-role-policy --role-name $RoleName --policy-arn "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 
 # Create least-privilege inline policy for S3 & SNS
+$TempAppPolicyFile = [System.IO.Path]::GetTempFileName()
 $AppPolicy = @"
 {
   "Version": "2012-10-17",
@@ -176,14 +187,18 @@ $AppPolicy = @"
   ]
 }
 "@
-aws iam put-role-policy --role-name $RoleName --policy-name "ApleShaharAppPermissions" --policy-document $AppPolicy
+$AppPolicy | Set-Content -Path $TempAppPolicyFile -Encoding utf8
+aws iam put-role-policy --role-name $RoleName --policy-name "ApleShaharAppPermissions" --policy-document file://$TempAppPolicyFile
+Remove-Item -Force $TempAppPolicyFile
 
 # Instance profile
 try {
     aws iam create-instance-profile --instance-profile-name $RoleName | Out-Null
+} catch {}
+try {
     aws iam add-role-to-instance-profile --instance-profile-name $RoleName --role-name $RoleName | Out-Null
 } catch {}
-Write-Host "✅ IAM Instance Profile created: $RoleName"
+Write-Host "IAM Instance Profile created: $RoleName"
 
 # ------------------------------------------------------------------------------
 # 5. Amazon SNS Topic & Email Alert Subscription
@@ -192,8 +207,8 @@ Write-Host "`n[5/7] Creating Amazon SNS Topic & Alert Subscription..." -Foregrou
 
 $TopicArn = (aws sns create-topic --name apleshahar-complaint-alerts --region $Region --output json | ConvertFrom-Json).TopicArn
 aws sns subscribe --topic-arn $TopicArn --protocol email --notification-endpoint $AlertEmail --region $Region | Out-Null
-Write-Host "✅ SNS Topic Created: $TopicArn"
-Write-Host "⚠️ An email was sent to $AlertEmail. Please click 'Confirm subscription' in your inbox!" -ForegroundColor Magenta
+Write-Host "SNS Topic Created: $TopicArn"
+Write-Host "An email was sent to $AlertEmail. Please click 'Confirm subscription' in your inbox!" -ForegroundColor Magenta
 
 # ------------------------------------------------------------------------------
 # 6. Amazon RDS PostgreSQL
@@ -211,7 +226,7 @@ aws rds create-db-instance `
     --db-instance-identifier apleshahar-postgres `
     --db-instance-class db.t3.micro `
     --engine postgres `
-    --engine-version 16.3 `
+    --engine-version "16.10" `
     --allocated-storage 20 `
     --storage-type gp3 `
     --master-username postgres `
@@ -224,7 +239,7 @@ aws rds create-db-instance `
     --backup-retention-period 1 `
     --region $Region | Out-Null
 
-Write-Host "✅ RDS Instance creation triggered (provisioning takes ~4-6 minutes)."
+Write-Host "RDS Instance creation triggered (provisioning takes ~4-6 minutes)."
 
 # ------------------------------------------------------------------------------
 # 7. CloudWatch Alarm for CPU Utilization
@@ -244,13 +259,13 @@ aws cloudwatch put-metric-alarm `
     --alarm-actions $TopicArn `
     --region $Region | Out-Null
 
-Write-Host "✅ CloudWatch Alarm created."
+Write-Host "CloudWatch Alarm created."
 
 # ------------------------------------------------------------------------------
 # Output Summary
 # ------------------------------------------------------------------------------
 Write-Host "`n==============================================================================" -ForegroundColor Green
-Write-Host "🎉 AWS INFRASTRUCTURE PROVISIONING COMPLETE!" -ForegroundColor Green
+Write-Host "AWS INFRASTRUCTURE PROVISIONING COMPLETE!" -ForegroundColor Green
 Write-Host "==============================================================================" -ForegroundColor Green
 Write-Host "VPC ID:                 $VpcId"
 Write-Host "Public Subnet (EC2):    $PublicSubnetId"

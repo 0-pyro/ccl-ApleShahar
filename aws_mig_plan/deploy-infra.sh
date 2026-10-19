@@ -160,7 +160,7 @@ aws rds create-db-instance \
     --db-instance-identifier apleshahar-postgres \
     --db-instance-class db.t3.micro \
     --engine postgres \
-    --engine-version 16.3 \
+    --engine-version "16.10" \
     --allocated-storage 20 \
     --storage-type gp3 \
     --master-username postgres \
