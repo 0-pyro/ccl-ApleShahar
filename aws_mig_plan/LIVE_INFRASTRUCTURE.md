@@ -81,7 +81,7 @@ During the initial deployment using PowerShell, two specific runtime errors occu
 
 ## 4. Next Steps for Team Members
 
-### For Teammate 1 (EC2 Compute & Container):
+### For Arlen (EC2 Compute & Container):
 1. In the AWS Console, launch an Ubuntu 24.04 `t2.micro` or `t3.micro` instance:
    - VPC: `vpc-0004b4f628adae8df`
    - Subnet: `subnet-01b625a9a0f0af953` (`apleshahar-public-1a`)
@@ -100,7 +100,7 @@ During the initial deployment using PowerShell, two specific runtime errors occu
 3. Verify backend status:
    `curl http://localhost:5000/health`
 
-### For Teammate 2 (Lambda Serverless Image Resizer):
+### For Hansy (Lambda Serverless Image Resizer):
 1. In directory `aws_mig_plan/lambda/`, run:
    `npm install`
    Create a zip file containing `index.mjs`, `package.json`, and `node_modules`.

@@ -153,6 +153,6 @@ Supporting Cloud Services:
 - Live infrastructure details documented in [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md).
 
 ### Remaining Tasks for Teammates:
-1. **Teammate 1 (Compute)**: Launch the Ubuntu EC2 instance in `subnet-01b625a9a0f0af953`, attach IAM role `ApleShahar-EC2-BackendRole`, clone the repository, and run `docker compose up -d`.
-2. **Teammate 2 (Serverless & Observability)**: Package and deploy the Lambda thumbnail resizer from `aws_mig_plan/lambda/`, attach the S3 trigger, and verify CloudWatch metrics.
+1. **Arlen (Compute)**: Launch the Ubuntu EC2 instance in `subnet-01b625a9a0f0af953`, attach IAM role `ApleShahar-EC2-BackendRole`, clone the repository, and run `docker compose up -d`.
+2. **Hansy (Serverless & Observability)**: Package and deploy the Lambda thumbnail resizer from `aws_mig_plan/lambda/`, attach the S3 trigger, and verify CloudWatch metrics.
 3. **Teardown**: After evaluation, execute `.\aws_mig_plan\cleanup.ps1` to stop and delete resources.
