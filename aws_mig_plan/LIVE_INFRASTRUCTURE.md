@@ -91,6 +91,65 @@ During the initial deployment using PowerShell, two specific runtime errors occu
 - **Database Link**: Successfully connected to Amazon RDS PostgreSQL (`apleshahar-postgres`). Auto-created tables (`users`, `complaints`, `facility_requests`).
 - **Live Test**: Successfully registered citizen user (`id: 1` and `id: 2`) and verified JWT authentication.
 
+### Pending: Arlen (Frontend Hosting & CloudFront CDN - Capability 3):
+Choose either Method A (Recommended: S3 + CloudFront CDN) or Method B (Nginx on existing EC2):
+
+#### Method A: S3 Static Hosting + CloudFront CDN (Recommended for project rubric)
+1. Build production bundle on your machine:
+   - In `frontend/.env`, ensure:
+     `VITE_API_BASE_URL=http://3.110.87.195:5000`
+   - Run:
+     `npm install`
+     `npm run build`
+     (This outputs the static files into `frontend/dist/`)
+2. Create S3 Bucket for Frontend:
+   - Bucket name: `apleshahar-frontend-76343` (Region: `ap-south-1`)
+   - Uncheck "Block all public access"
+   - Under Properties -> Static website hosting -> Enable:
+     - Index document: `index.html`
+     - Error document: `index.html`
+   - Under Permissions -> Bucket policy:
+     ```json
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+         {
+           "Sid": "PublicReadGetObject",
+           "Effect": "Allow",
+           "Principal": "*",
+           "Action": "s3:GetObject",
+           "Resource": "arn:aws:s3:::apleshahar-frontend-76343/*"
+         }
+       ]
+     }
+     ```
+3. Upload files:
+   - Upload all files from `frontend/dist/` into the root of `apleshahar-frontend-76343`.
+4. Create CloudFront Distribution (Capability 3 CDN):
+   - Origin domain: Select `apleshahar-frontend-76343.s3-website.ap-south-1.amazonaws.com` (use the website endpoint from S3 Properties)
+   - Viewer protocol policy: Redirect HTTP to HTTPS
+   - Default root object: `index.html`
+   - Error pages tab -> Create custom error response:
+     - HTTP error code: `403` and `404`
+     - Response page path: `/index.html`
+     - HTTP response code: `200: OK`
+5. Note the CloudFront distribution domain name (e.g. `https://d111111abcdef8.cloudfront.net`).
+
+#### Method B: Nginx on existing EC2 (Alternative)
+1. Connect to EC2 instance `i-0260cf2d7f71c8832` via SSH.
+2. Install Nginx:
+   `sudo apt install -y nginx`
+3. Clone or pull repo:
+   `cd ~/ccl-ApleShahar/frontend`
+   `npm install && npm run build`
+4. Copy build:
+   `sudo cp -r dist/* /var/www/html/`
+5. Configure Nginx SPA fallback in `/etc/nginx/sites-available/default`:
+   Set `try_files $uri $uri/ /index.html;` inside `location /`.
+6. Restart Nginx:
+   `sudo systemctl restart nginx`
+7. Access frontend at `http://3.110.87.195`.
+
 ### Pending: Hansy (Lambda Serverless Image Resizer - Capability 1):
 1. In directory `aws_mig_plan/lambda/`, run:
    `npm install`

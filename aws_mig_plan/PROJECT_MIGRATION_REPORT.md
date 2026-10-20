@@ -156,5 +156,6 @@ Supporting Cloud Services:
 
 ### Remaining Tasks in Migration Plan:
 1. **Hansy (Serverless & Observability - Capability 1)**: Package and deploy the Lambda thumbnail resizer from `aws_mig_plan/lambda/`, attach the S3 trigger on `apleshahar-media-76343`, and test thumbnail generation.
-2. **Frontend Cloud Hosting / CDN (Capability 3)**: Deploy the static frontend bundle (`frontend/dist/`) to S3 with Amazon CloudFront CDN or host via Nginx on EC2 port 80.
-3. **Teardown**: After evaluation, execute `.\aws_mig_plan\cleanup.ps1` to stop and delete resources.
+2. **Arlen (Frontend Cloud Hosting / CDN - Capability 3)**: Deploy the static frontend bundle (`frontend/dist/`) to S3 with Amazon CloudFront CDN (or host via Nginx on EC2 port 80).
+3. **End-to-End Verification**: Register, login, file grievance with photo, verify S3 upload, Lambda thumbnailing, and SNS email.
+4. **Teardown**: After evaluation, execute `.\aws_mig_plan\cleanup.ps1` to stop and delete resources.
