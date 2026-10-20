@@ -21,6 +21,7 @@ This document records the active AWS cloud infrastructure provisioned for the **
 | **RDS PostgreSQL DB** | `apleshahar-postgres` | `apleshahar-postgres.claiyoqcgr10.ap-south-1.rds.amazonaws.com` | Engine: PostgreSQL 16.10, Class: `db.t3.micro`, Storage: 20GB gp3, Single-AZ, Port: 5432. |
 | **Database Name** | `apleshahar` | Master user: `postgres` | Password: Set during deployment (`ApleShaharPassword123!`). |
 | **S3 Media Storage** | `apleshahar-media-76343`| `s3://apleshahar-media-76343` | Public read bucket policy applied; browser CORS policy active. |
+| **EC2 Instance (Backend)** | `apleshahar-backend-server` | `i-0260cf2d7f71c8832` | Public IP: `3.110.87.195`, Type: `t3.micro`, Port 5000, State: `running`. |
 | **IAM Role** | `ApleShahar-EC2-BackendRole` | `arn:aws:iam::852227600998:role/ApleShahar-EC2-BackendRole` | Trust: EC2. Policies: S3 scoped read/write, SNS publish, SSM Session Manager. |
 | **IAM Instance Profile** | `ApleShahar-EC2-BackendRole` | Attached to Role | Used when launching the backend EC2 instance. |
 | **SNS Topic** | `apleshahar-complaint-alerts` | `arn:aws:sns:ap-south-1:852227600998:apleshahar-complaint-alerts` | Email subscription active (`apatade76@gmail.com`). |
@@ -81,26 +82,16 @@ During the initial deployment using PowerShell, two specific runtime errors occu
 
 ## 4. Next Steps for Team Members
 
-### For Arlen (EC2 Compute & Container):
-1. In the AWS Console, launch an Ubuntu 24.04 `t2.micro` or `t3.micro` instance:
-   - VPC: `vpc-0004b4f628adae8df`
-   - Subnet: `subnet-01b625a9a0f0af953` (`apleshahar-public-1a`)
-   - Auto-assign Public IP: Enable
-   - Security Group: `sg-062252861b7de2668` (`apleshahar-ec2-sg`)
-   - IAM Instance Profile: `ApleShahar-EC2-BackendRole`
-2. Connect to the instance and execute:
-   ```bash
-   sudo apt update && sudo apt install -y docker.io docker-compose git
-   git clone https://github.com/0-pyro/ccl-ApleShahar.git
-   cd ccl-ApleShahar/backend
-   # Create .env with the values from Section 2 of this document
-   nano .env
-   docker compose up -d --build
-   ```
-3. Verify backend status:
-   `curl http://localhost:5000/health`
+### Completed: Arlen (EC2 Compute & Backend Container) - VERIFIED
+- **Instance ID**: `i-0260cf2d7f71c8832`
+- **Public IP**: `3.110.87.195`
+- **Instance Type**: `t3.micro` (Ubuntu 24.04 LTS)
+- **Status**: Running live with Docker container `apleshahar-backend`.
+- **Healthcheck**: Verified at `http://3.110.87.195:5000/health`.
+- **Database Link**: Successfully connected to Amazon RDS PostgreSQL (`apleshahar-postgres`). Auto-created tables (`users`, `complaints`, `facility_requests`).
+- **Live Test**: Successfully registered citizen user (`id: 1` and `id: 2`) and verified JWT authentication.
 
-### For Hansy (Lambda Serverless Image Resizer):
+### Pending: Hansy (Lambda Serverless Image Resizer - Capability 1):
 1. In directory `aws_mig_plan/lambda/`, run:
    `npm install`
    Create a zip file containing `index.mjs`, `package.json`, and `node_modules`.

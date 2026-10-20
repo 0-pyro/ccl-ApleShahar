@@ -124,8 +124,8 @@ The following resources are actively provisioned in AWS region `ap-south-1`:
 │                                                                        │
 │   Public Subnet: subnet-01b625a9a0f0af953 (10.0.1.0/24)                │
 │   ├── Internet Gateway: igw-0048ad4830f3abf26                          │
-│   ├── Security Group: sg-062252861b7de2668 (Ports 80, 443, 22)        │
-│   └── Amazon EC2 (Backend API Container) [To be launched by Team]      │
+│   ├── Security Group: sg-062252861b7de2668 (Ports 80, 443, 22, 5000)   │
+│   └── Amazon EC2: i-0260cf2d7f71c8832 (3.110.87.195:5000) - LIVE       │
 │                                                                        │
 │   Private Subnets:                                                     │
 │   ├── subnet-0b7a37def7a9389ae (10.0.2.0/24 - ap-south-1a)           │
@@ -150,9 +150,11 @@ Supporting Cloud Services:
 - Monorepo consolidated and pushed to GitHub.
 - Backend decoupled from Supabase to native PostgreSQL, JWT, S3, and SNS.
 - Core networking, database, security, and messaging infrastructure provisioned in AWS.
+- EC2 Compute & Container deployed by Arlen (`i-0260cf2d7f71c8832` at `3.110.87.195:5000`).
+- Healthcheck, database auto-migration, user registration, and authentication verified live.
 - Live infrastructure details documented in [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md).
 
-### Remaining Tasks for Teammates:
-1. **Arlen (Compute)**: Launch the Ubuntu EC2 instance in `subnet-01b625a9a0f0af953`, attach IAM role `ApleShahar-EC2-BackendRole`, clone the repository, and run `docker compose up -d`.
-2. **Hansy (Serverless & Observability)**: Package and deploy the Lambda thumbnail resizer from `aws_mig_plan/lambda/`, attach the S3 trigger, and verify CloudWatch metrics.
+### Remaining Tasks in Migration Plan:
+1. **Hansy (Serverless & Observability - Capability 1)**: Package and deploy the Lambda thumbnail resizer from `aws_mig_plan/lambda/`, attach the S3 trigger on `apleshahar-media-76343`, and test thumbnail generation.
+2. **Frontend Cloud Hosting / CDN (Capability 3)**: Deploy the static frontend bundle (`frontend/dist/`) to S3 with Amazon CloudFront CDN or host via Nginx on EC2 port 80.
 3. **Teardown**: After evaluation, execute `.\aws_mig_plan\cleanup.ps1` to stop and delete resources.
