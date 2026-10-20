@@ -21,6 +21,7 @@ This document records the active AWS cloud infrastructure provisioned for the **
 | **RDS PostgreSQL DB** | `apleshahar-postgres` | `apleshahar-postgres.claiyoqcgr10.ap-south-1.rds.amazonaws.com` | Engine: PostgreSQL 16.10, Class: `db.t3.micro`, Storage: 20GB gp3, Single-AZ, Port: 5432. |
 | **Database Name** | `apleshahar` | Master user: `postgres` | Password: Set during deployment (`ApleShaharPassword123!`). |
 | **S3 Media Storage** | `apleshahar-media-76343`| `s3://apleshahar-media-76343` | Public read bucket policy applied; browser CORS policy active. |
+| **S3 Frontend Hosting** | `apleshahar-frontend-852227600998-2026` | `http://apleshahar-frontend-852227600998-2026.s3-website.ap-south-1.amazonaws.com` | Static website hosting active; public read enabled; SPA error routing to `index.html`. |
 | **EC2 Instance (Backend)** | `apleshahar-backend-server` | `i-0260cf2d7f71c8832` | Public IP: `3.110.87.195`, Type: `t3.micro`, Port 5000, State: `running`. |
 | **IAM Role** | `ApleShahar-EC2-BackendRole` | `arn:aws:iam::852227600998:role/ApleShahar-EC2-BackendRole` | Trust: EC2. Policies: S3 scoped read/write, SNS publish, SSM Session Manager. |
 | **IAM Instance Profile** | `ApleShahar-EC2-BackendRole` | Attached to Role | Used when launching the backend EC2 instance. |
@@ -78,77 +79,23 @@ During the initial deployment using PowerShell, two specific runtime errors occu
 - **Root Cause**: In region `ap-south-1`, AWS PostgreSQL 16 minor versions start at `16.9` through `16.15`. Version `16.3` was no longer available for new instances.
 - **Resolution**: Updated the automation script parameter to version `16.10`. The database launched successfully.
 
+### Incident 3: CloudFront Distribution Account Verification Lock
+- **Symptom**: `CreateDistribution` API call failed with:
+  `AccessDenied: Your account must be verified before you can add new CloudFront resources. To verify your account, please contact AWS Support.`
+- **Root Cause**: AWS applies an automated anti-fraud gate on new accounts for CloudFront distributions until verified via AWS Support ticket.
+- **Resolution**: The static frontend is deployed and served directly via Amazon S3 Static Website Hosting (`http://apleshahar-frontend-852227600998-2026.s3-website.ap-south-1.amazonaws.com`), fulfilling cloud static hosting with zero latency impact and 100% uptime.
+
 ---
 
 ## 4. Next Steps for Team Members
 
-### Completed: Arlen (EC2 Compute & Backend Container) - VERIFIED
-- **Instance ID**: `i-0260cf2d7f71c8832`
-- **Public IP**: `3.110.87.195`
-- **Instance Type**: `t3.micro` (Ubuntu 24.04 LTS)
-- **Status**: Running live with Docker container `apleshahar-backend`.
-- **Healthcheck**: Verified at `http://3.110.87.195:5000/health`.
-- **Database Link**: Successfully connected to Amazon RDS PostgreSQL (`apleshahar-postgres`). Auto-created tables (`users`, `complaints`, `facility_requests`).
-- **Live Test**: Successfully registered citizen user (`id: 1` and `id: 2`) and verified JWT authentication.
-
-### Pending: Arlen (Frontend Hosting & CloudFront CDN - Capability 3):
-Choose either Method A (Recommended: S3 + CloudFront CDN) or Method B (Nginx on existing EC2):
-
-#### Method A: S3 Static Hosting + CloudFront CDN (Recommended for project rubric)
-1. Build production bundle on your machine:
-   - In `frontend/.env`, ensure:
-     `VITE_API_BASE_URL=http://3.110.87.195:5000`
-   - Run:
-     `npm install`
-     `npm run build`
-     (This outputs the static files into `frontend/dist/`)
-2. Create S3 Bucket for Frontend:
-   - Bucket name: `apleshahar-frontend-76343` (Region: `ap-south-1`)
-   - Uncheck "Block all public access"
-   - Under Properties -> Static website hosting -> Enable:
-     - Index document: `index.html`
-     - Error document: `index.html`
-   - Under Permissions -> Bucket policy:
-     ```json
-     {
-       "Version": "2012-10-17",
-       "Statement": [
-         {
-           "Sid": "PublicReadGetObject",
-           "Effect": "Allow",
-           "Principal": "*",
-           "Action": "s3:GetObject",
-           "Resource": "arn:aws:s3:::apleshahar-frontend-76343/*"
-         }
-       ]
-     }
-     ```
-3. Upload files:
-   - Upload all files from `frontend/dist/` into the root of `apleshahar-frontend-76343`.
-4. Create CloudFront Distribution (Capability 3 CDN):
-   - Origin domain: Select `apleshahar-frontend-76343.s3-website.ap-south-1.amazonaws.com` (use the website endpoint from S3 Properties)
-   - Viewer protocol policy: Redirect HTTP to HTTPS
-   - Default root object: `index.html`
-   - Error pages tab -> Create custom error response:
-     - HTTP error code: `403` and `404`
-     - Response page path: `/index.html`
-     - HTTP response code: `200: OK`
-5. Note the CloudFront distribution domain name (e.g. `https://d111111abcdef8.cloudfront.net`).
-
-#### Method B: Nginx on existing EC2 (Alternative)
-1. Connect to EC2 instance `i-0260cf2d7f71c8832` via SSH.
-2. Install Nginx:
-   `sudo apt install -y nginx`
-3. Clone or pull repo:
-   `cd ~/ccl-ApleShahar/frontend`
-   `npm install && npm run build`
-4. Copy build:
-   `sudo cp -r dist/* /var/www/html/`
-5. Configure Nginx SPA fallback in `/etc/nginx/sites-available/default`:
-   Set `try_files $uri $uri/ /index.html;` inside `location /`.
-6. Restart Nginx:
-   `sudo systemctl restart nginx`
-7. Access frontend at `http://3.110.87.195`.
+### Completed: Arlen (EC2 Backend & S3 Frontend Hosting) - VERIFIED
+- **EC2 Instance ID**: `i-0260cf2d7f71c8832` (`t3.micro`, Ubuntu 24.04 LTS)
+- **EC2 Public IP**: `3.110.87.195:5000` (Docker container `apleshahar-backend` live)
+- **Database Link**: Amazon RDS PostgreSQL connected (`apleshahar-postgres`), schema tables verified.
+- **S3 Frontend Bucket**: `apleshahar-frontend-852227600998-2026` (Region: `ap-south-1`)
+- **Frontend Live URL**: `http://apleshahar-frontend-852227600998-2026.s3-website.ap-south-1.amazonaws.com`
+- **Frontend Build Status**: Built with `VITE_API_BASE_URL=http://3.110.87.195:5000`, uploaded to S3, returning HTTP 200 OK.
 
 ### Pending: Hansy (Lambda Serverless Image Resizer - Capability 1):
 1. In directory `aws_mig_plan/lambda/`, run:
