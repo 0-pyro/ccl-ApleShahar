@@ -136,8 +136,12 @@ The following resources are actively provisioned in AWS region `ap-south-1`:
 └────────────────────────────────────────────────────────────────────────┘
 
 Supporting Cloud Services:
-├── Amazon S3 Bucket: apleshahar-media-76343 (Public read, CORS enabled)
-├── IAM Role & Profile: ApleShahar-EC2-BackendRole (Least-privilege S3/SNS/SSM)
+├── Amazon S3 Buckets:
+│   ├── apleshahar-media-76343 (Media storage, CORS, Lambda trigger)
+│   └── apleshahar-frontend-852227600998-2026 (Static web hosting)
+├── Amazon CloudFront CDN: d1gbzyhd2sdjfm.cloudfront.net (Distribution ID: E173DOOWG8BGP2)
+├── AWS Lambda: ApleShahar-ImageResizer (Node.js 20.x, auto-thumbnail pipeline)
+├── IAM Roles: ApleShahar-EC2-BackendRole, ApleShahar-LambdaExecutionRole
 ├── Amazon SNS Topic: apleshahar-complaint-alerts
 └── CloudWatch Alarm: EC2-HighCPU-Alarm (CPU > 75%)
 ```
@@ -152,10 +156,11 @@ Supporting Cloud Services:
 - Core networking, database, security, and messaging infrastructure provisioned in AWS.
 - EC2 Compute & Container deployed by Arlen (`i-0260cf2d7f71c8832` at `3.110.87.195:5000`).
 - Healthcheck, database auto-migration, user registration, and authentication verified live.
+- Frontend static hosting deployed to S3 by Arlen (`apleshahar-frontend-852227600998-2026`).
+- Amazon CloudFront edge CDN distribution created (`https://d1gbzyhd2sdjfm.cloudfront.net`).
+- Serverless image processing deployed by Hansy (`ApleShahar-ImageResizer`) with automatic thumbnailing verified live.
 - Live infrastructure details documented in [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md).
 
 ### Remaining Tasks in Migration Plan:
-1. **Hansy (Serverless & Observability - Capability 1)**: Package and deploy the Lambda thumbnail resizer from `aws_mig_plan/lambda/`, attach the S3 trigger on `apleshahar-media-76343`, and test thumbnail generation.
-2. **Arlen (Frontend Cloud Hosting / CDN - Capability 3)**: Deploy the static frontend bundle (`frontend/dist/`) to S3 with Amazon CloudFront CDN (or host via Nginx on EC2 port 80).
-3. **End-to-End Verification**: Register, login, file grievance with photo, verify S3 upload, Lambda thumbnailing, and SNS email.
-4. **Teardown**: After evaluation, execute `.\aws_mig_plan\cleanup.ps1` to stop and delete resources.
+1. **End-to-End Verification**: Register citizen, log in, submit grievance with photographic proof, verify S3 upload, Lambda thumbnailing, and SNS alert dispatch.
+2. **Teardown**: After faculty evaluation, execute `.\aws_mig_plan\cleanup.ps1` to stop and delete resources.

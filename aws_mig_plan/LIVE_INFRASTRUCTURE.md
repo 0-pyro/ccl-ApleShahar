@@ -22,6 +22,8 @@ This document records the active AWS cloud infrastructure provisioned for the **
 | **Database Name** | `apleshahar` | Master user: `postgres` | Password: Set during deployment (`ApleShaharPassword123!`). |
 | **S3 Media Storage** | `apleshahar-media-76343`| `s3://apleshahar-media-76343` | Public read bucket policy applied; browser CORS policy active. |
 | **S3 Frontend Hosting** | `apleshahar-frontend-852227600998-2026` | `http://apleshahar-frontend-852227600998-2026.s3-website.ap-south-1.amazonaws.com` | Static website hosting active; public read enabled; SPA error routing to `index.html`. |
+| **CloudFront CDN** | `ApleShahar Frontend CDN` | `d1gbzyhd2sdjfm.cloudfront.net` (ID: `E173DOOWG8BGP2`) | Global edge CDN caching frontend assets, HTTPS redirect, SPA fallback routing. |
+| **Lambda Image Resizer** | `ApleShahar-ImageResizer` | `arn:aws:lambda:ap-south-1:852227600998:function:ApleShahar-ImageResizer` | Node.js 20.x, 512MB, auto-triggered on `s3:ObjectCreated:*` in media bucket. |
 | **EC2 Instance (Backend)** | `apleshahar-backend-server` | `i-0260cf2d7f71c8832` | Public IP: `3.110.87.195`, Type: `t3.micro`, Port 5000, State: `running`. |
 | **IAM Role** | `ApleShahar-EC2-BackendRole` | `arn:aws:iam::852227600998:role/ApleShahar-EC2-BackendRole` | Trust: EC2. Policies: S3 scoped read/write, SNS publish, SSM Session Manager. |
 | **IAM Instance Profile** | `ApleShahar-EC2-BackendRole` | Attached to Role | Used when launching the backend EC2 instance. |
@@ -83,7 +85,7 @@ During the initial deployment using PowerShell, two specific runtime errors occu
 - **Symptom**: `CreateDistribution` API call failed with:
   `AccessDenied: Your account must be verified before you can add new CloudFront resources. To verify your account, please contact AWS Support.`
 - **Root Cause**: AWS applies an automated anti-fraud gate on new accounts for CloudFront distributions until verified via AWS Support ticket.
-- **Resolution**: The static frontend is deployed and served directly via Amazon S3 Static Website Hosting (`http://apleshahar-frontend-852227600998-2026.s3-website.ap-south-1.amazonaws.com`), fulfilling cloud static hosting with zero latency impact and 100% uptime.
+- **Resolution**: Submitted an Account Activation verification ticket to AWS Support. Verification was approved, and CloudFront distribution `E173DOOWG8BGP2` was successfully provisioned at `https://d1gbzyhd2sdjfm.cloudfront.net`.
 
 ---
 
@@ -95,18 +97,18 @@ During the initial deployment using PowerShell, two specific runtime errors occu
 - **Database Link**: Amazon RDS PostgreSQL connected (`apleshahar-postgres`), schema tables verified.
 - **S3 Frontend Bucket**: `apleshahar-frontend-852227600998-2026` (Region: `ap-south-1`)
 - **Frontend Live URL**: `http://apleshahar-frontend-852227600998-2026.s3-website.ap-south-1.amazonaws.com`
+- **CloudFront CDN Distribution**: `https://d1gbzyhd2sdjfm.cloudfront.net` (Distribution ID: `E173DOOWG8BGP2`)
 - **Frontend Build Status**: Built with `VITE_API_BASE_URL=http://3.110.87.195:5000`, uploaded to S3, returning HTTP 200 OK.
 
-### Pending: Hansy (Lambda Serverless Image Resizer - Capability 1):
-1. In directory `aws_mig_plan/lambda/`, run:
-   `npm install`
-   Create a zip file containing `index.mjs`, `package.json`, and `node_modules`.
-2. In AWS Lambda console, create function `ApleShahar-ImageResizer` (Node.js 20.x, x86_64).
-3. Upload the zip file.
-4. Add S3 Trigger:
-   - Bucket: `apleshahar-media-76343`
-   - Event: `s3:ObjectCreated:*`
-5. Test by uploading an image into S3; verify that Lambda creates a corresponding `thumb-*` file.
+### Completed: Hansy (Lambda Serverless Image Resizer - Capability 1) - VERIFIED
+- **Function Name**: `ApleShahar-ImageResizer`
+- **Runtime**: `nodejs20.x` (Architecture: `x86_64`, Memory: 512 MB, Timeout: 30s)
+- **Execution Role**: `arn:aws:iam::852227600998:role/ApleShahar-LambdaExecutionRole`
+- **Trigger**: S3 bucket `apleshahar-media-76343` event `s3:ObjectCreated:*`
+- **Live Verification**: Uploaded test citizen complaint photos and confirmed automated thumbnail creation:
+  - `complaints/sample-civic-issue.png` (608 KB) -> `complaints/thumb-sample-civic-issue.png` (107 KB)
+  - `complaints/test-pothole.png` (608 KB) -> `complaints/thumb-test-pothole.png` (107 KB)
+- **Status**: Live, verified, and operational.
 
 ---
 
