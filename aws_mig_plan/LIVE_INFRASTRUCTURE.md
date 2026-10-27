@@ -22,10 +22,11 @@ This document records the active AWS cloud infrastructure provisioned for the **
 | **Database Name** | `apleshahar` | Master user: `postgres` | Password: Set during deployment (`ApleShaharPassword123!`). |
 | **S3 Media Storage** | `apleshahar-media-76343`| `s3://apleshahar-media-76343` | Public read bucket policy applied; browser CORS policy active. |
 | **S3 Frontend Hosting** | `apleshahar-frontend-852227600998-2026` | `http://apleshahar-frontend-852227600998-2026.s3-website.ap-south-1.amazonaws.com` | Static website hosting active; public read enabled; SPA error routing to `index.html`. |
-| **CloudFront CDN** | `ApleShahar Frontend CDN` | `d1gbzyhd2sdjfm.cloudfront.net` (ID: `E173DOOWG8BGP2`) | Global edge CDN caching frontend assets, HTTPS redirect, SPA fallback routing. |
+| **CloudFront CDN** | `ApleShahar Unified Edge CDN` | `d1gbzyhd2sdjfm.cloudfront.net` (ID: `E173DOOWG8BGP2`) | Multi-origin edge routing: `/*` to S3 frontend, `/api/*` to EC2 container (HTTPS proxy), `/complaints/*` to S3 media bucket. |
+| **SSM Parameter Store**| `/apleshahar/*` | 11 Managed Secrets/Configs | Encrypted `SecureString` and `String` parameters injected at container runtime via IAM. |
 | **Lambda Image Resizer** | `ApleShahar-ImageResizer` | `arn:aws:lambda:ap-south-1:852227600998:function:ApleShahar-ImageResizer` | Node.js 20.x, 512MB, auto-triggered on `s3:ObjectCreated:*` in media bucket. |
 | **EC2 Instance (Backend)** | `apleshahar-backend-server` | `i-0260cf2d7f71c8832` | Public IP: `3.110.87.195`, Type: `t3.micro`, Port 5000, State: `running`. |
-| **IAM Role** | `ApleShahar-EC2-BackendRole` | `arn:aws:iam::852227600998:role/ApleShahar-EC2-BackendRole` | Trust: EC2. Policies: S3 scoped read/write, SNS publish, SSM Session Manager. |
+| **IAM Role** | `ApleShahar-EC2-BackendRole` | `arn:aws:iam::852227600998:role/ApleShahar-EC2-BackendRole` | Trust: EC2. Policies: S3 scoped read/write, SNS publish, SSM Parameter Store read, SSM Session Manager. |
 | **IAM Instance Profile** | `ApleShahar-EC2-BackendRole` | Attached to Role | Used when launching the backend EC2 instance. |
 | **SNS Topic** | `apleshahar-complaint-alerts` | `arn:aws:sns:ap-south-1:852227600998:apleshahar-complaint-alerts` | Email subscription active (`apatade76@gmail.com`). |
 | **CloudWatch Alarm** | `EC2-HighCPU-Alarm` | Threshold: CPU > 75% | Actions: Send notification to SNS topic upon breach. |
