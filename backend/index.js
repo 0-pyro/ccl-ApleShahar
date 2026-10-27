@@ -51,13 +51,15 @@ app.use(express.json());
 app.use("/uploads", express.static(path.resolve("uploads")));
 
 // Cloud Healthcheck (for AWS CloudWatch, ALB, or EC2 status check)
-app.get("/health", (req, res) => {
+const healthHandler = (req, res) => {
   res.json({
     status: "ok",
     service: "ApleShahar-Backend",
     timestamp: new Date().toISOString(),
   });
-});
+};
+app.get("/health", healthHandler);
+app.get("/api/health", healthHandler);
 
 // Application Routes
 app.use("/api/test", testRoutes);
