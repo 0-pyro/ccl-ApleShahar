@@ -19,7 +19,7 @@ export async function sendComplaintAlert(complaint) {
   try {
     const subject = `[ApleShahar Alert] New Issue in Ward ${complaint.ward}`;
     const message = [
-      `🚨 New Civic Issue Reported!`,
+      `[ApleShahar] New Civic Issue Reported!`,
       `---------------------------------------`,
       `Ward: ${complaint.ward}`,
       `Type: ${complaint.issue_type || 'General'}`,
@@ -35,9 +35,9 @@ export async function sendComplaintAlert(complaint) {
       Subject: subject,
       Message: message,
     }));
-    console.log(`✅ SNS alert dispatched for complaint #${complaint.id}`);
+    console.log(`[SNS] Alert dispatched for complaint #${complaint.id}`);
   } catch (err) {
-    console.warn(`⚠️ Failed to send SNS notification:`, err.message);
+    console.warn(`[SNS] Failed to send notification:`, err.message);
   }
 }
 
@@ -50,7 +50,7 @@ export async function sendResolutionAlert(complaint) {
   try {
     const subject = `[ApleShahar Alert] Issue #${complaint.id} Resolved in Ward ${complaint.ward}`;
     const message = [
-      `✅ Civic Issue Resolved!`,
+      `[ApleShahar] Civic Issue Resolved!`,
       `---------------------------------------`,
       `Complaint ID: #${complaint.id}`,
       `Ward: ${complaint.ward}`,
@@ -66,6 +66,6 @@ export async function sendResolutionAlert(complaint) {
       Message: message,
     }));
   } catch (err) {
-    console.warn(`⚠️ Failed to send resolution SNS notification:`, err.message);
+    console.warn(`[SNS] Failed to send resolution notification:`, err.message);
   }
 }
