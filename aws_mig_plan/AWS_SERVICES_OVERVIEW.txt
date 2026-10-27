@@ -1,0 +1,351 @@
+APLESHAHAR CLOUD ARCHITECTURE - AWS SERVICES OVERVIEW AND SPECIFICATION
+================================================================================
+
+This document provides a comprehensive technical breakdown of all Amazon Web
+Services (AWS) utilized in the ApleShahar civic grievance and municipal facility
+management platform. For each service, this document explains:
+1. What the service does in general cloud architecture.
+2. Why the service was selected for ApleShahar (academic and architectural justification).
+3. How the service is configured, integrated, and triggered in the live environment.
+
+================================================================================
+TABLE OF SERVICES COVERED
+================================================================================
+1. Amazon VPC (Virtual Private Cloud)
+2. Amazon EC2 (Elastic Compute Cloud)
+3. Amazon RDS (Relational Database Service - PostgreSQL)
+4. Amazon S3 (Simple Storage Service)
+5. Amazon CloudFront (Content Delivery Network)
+6. AWS Lambda (Serverless Compute)
+7. Amazon SNS (Simple Notification Service)
+8. AWS Systems Manager (SSM) Parameter Store
+9. Amazon CloudWatch
+10. AWS IAM (Identity and Access Management)
+
+================================================================================
+1. AMAZON VPC (VIRTUAL PRIVATE CLOUD)
+================================================================================
+WHAT THE SERVICE DOES:
+Amazon VPC enables the provisioning of a logically isolated virtual network within
+the AWS cloud. It allows complete control over virtual networking parameters,
+including IP address range selection, subnet creation, route table configuration,
+network gateways, and firewall security groups.
+
+WHY WE USED IT IN APLESHAHAR:
+A custom VPC is a core academic requirement that enforces enterprise network
+segmentation. Instead of running resources in the default public VPC, ApleShahar
+implements a tiered security architecture: compute resources reside in a public
+subnet with egress capability, while the relational database resides strictly in
+isolated private subnets with no internet gateway route. This prevents direct port
+scanning or brute-force attempts on the database from the public internet.
+
+HOW IT WORKS AND HOW IT IS CONFIGURED:
+- VPC ID: vpc-0004b4f628adae8df
+- CIDR Block: 10.0.0.0/16 (Region: ap-south-1 Mumbai)
+- Internet Gateway: apleshahar-igw attached to the VPC.
+- Public Subnet: apleshahar-public-1a (10.0.1.0/24) in Availability Zone ap-south-1a.
+  Auto-assign public IPv4 is enabled. Associated with a public route table routing
+  0.0.0.0/0 to the Internet Gateway. Hosts the EC2 compute instance.
+- Private Subnets: apleshahar-private-1a (10.0.2.0/24 in ap-south-1a) and
+  apleshahar-private-1b (10.0.3.0/24 in ap-south-1b). These subnets are attached
+  to a private route table containing only local routes (10.0.0.0/16). They host
+  the Amazon RDS PostgreSQL database.
+- Security Group Tiering:
+  1. apleshahar-ec2-sg (sg-062252861b7de2668): Inbound ports 80, 443, 22, and 5000.
+  2. apleshahar-rds-sg (sg-0b9bde57f8c29bfdc): Inbound port 5432 is restricted
+     exclusively to source sg-062252861b7de2668 (EC2 only). No public IP can reach it.
+
+================================================================================
+2. AMAZON EC2 (ELASTIC COMPUTE CLOUD)
+================================================================================
+WHAT THE SERVICE DOES:
+Amazon EC2 provides resizable virtual compute capacity (virtual machines called
+instances) in the cloud. It allows complete administrative control over the operating
+system, networking, and software stack without serverless runtime execution limits.
+
+WHY WE USED IT IN APLESHAHAR:
+Academic requirements strictly mandate core non-serverless compute. EC2 hosts the
+containerized Node.js/Express REST API on Docker, providing continuous execution,
+in-memory connection pooling to PostgreSQL, local static fallback capability, and
+a standardized 12-factor runtime environment.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- Instance ID: i-0260cf2d7f71c8832
+- Instance Type: t3.micro (2 vCPUs, 1 GiB RAM, Free Tier eligible)
+- Operating System: Ubuntu Server 24.04 LTS
+- Public IP: 3.110.87.195
+- Container Runtime: Docker and Docker Compose running container apleshahar-backend.
+- Application Port: Exposes port 5000 internally, mapped to host port 5000.
+- How It Is Triggered:
+  Client API requests sent to https://d1gbzyhd2sdjfm.cloudfront.net/api/* are
+  forwarded by CloudFront over HTTP to ec2-3-110-87-195.ap-south-1.compute.amazonaws.com:5000.
+  The container processes incoming requests, interacts with Amazon RDS for data,
+  uploads complaint evidence to Amazon S3, and publishes alert payloads to Amazon SNS.
+- Authentication & Security:
+  Runs under IAM Instance Profile ApleShahar-EC2-BackendRole. The AWS SDK v3 client
+  retrieves temporary session credentials automatically via IMDSv2 (no static keys).
+
+================================================================================
+3. AMAZON RDS (RELATIONAL DATABASE SERVICE - POSTGRESQL)
+================================================================================
+WHAT THE SERVICE DOES:
+Amazon RDS is a managed relational database service that automates database setup,
+hardware provisioning, storage allocation, operating system patching, automated
+snapshots, continuous backups, and multi-zone replication.
+
+WHY WE USED IT IN APLESHAHAR:
+ApleShahar was migrated away from proprietary Supabase client query libraries to native
+relational PostgreSQL. Using managed RDS provides robust ACID transactions, foreign
+key constraints between citizens, complaints, and ward metrics, automated daily backups,
+and decoupled storage that survives application crashes or EC2 instance termination.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- DB Identifier: apleshahar-postgres
+- Engine & Version: PostgreSQL 16.10
+- Instance Class: db.t3.micro (20 GiB gp3 General Purpose SSD storage)
+- Multi-AZ Deployment: Single-AZ (with DB Subnet Group spanning ap-south-1a and ap-south-1b).
+- Database Endpoint: apleshahar-postgres.claiyoqcgr10.ap-south-1.rds.amazonaws.com:5432
+- Public Accessibility: Set to NO.
+- Connection Layer:
+  The Node.js backend connects using native pg.Pool over an enforced SSL-encrypted connection.
+- How It Is Triggered:
+  Triggered dynamically by backend API controllers upon any data operation:
+  - User registration and login validation (SELECT / INSERT on table users).
+  - Grievance reporting and status tracking (SELECT / INSERT / UPDATE on table complaints).
+  - Municipal facility requests (table facility_requests).
+  - Standalone migration scripts (npm run db:migrate executes scripts/migrate.js).
+
+================================================================================
+4. AMAZON S3 (SIMPLE STORAGE SERVICE)
+================================================================================
+WHAT THE SERVICE DOES:
+Amazon S3 is an object storage service offering industry-leading scalability, data
+availability, security, and 99.999999999% (11 9s) durability. S3 stores data as
+objects within buckets and supports static website hosting, lifecycle management,
+and event notifications.
+
+WHY WE USED IT IN APLESHAHAR:
+S3 satisfies the mandatory cloud object storage requirement and solves two distinct
+needs in our architecture:
+1. Citizen Media Storage: Stores high-resolution grievance photos and resolution proof.
+2. Frontend Static Hosting: Replaces third-party static hosting (e.g. Vercel) by serving
+   the production React Single Page Application (SPA) directly from AWS.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+ApleShahar uses two distinct S3 buckets in region ap-south-1:
+
+Bucket 1: apleshahar-media-76343 (Media Storage)
+- Stores original grievance photos under complaints/ and resized thumbnails under
+  complaints/thumb-*.
+- How It Is Triggered:
+  When a citizen files a complaint with a photo, backend/services/uploadService.js
+  streams the image buffer directly into S3 using PutObjectCommand. S3 emits an
+  ObjectCreated event that triggers the AWS Lambda image resizer.
+
+Bucket 2: apleshahar-frontend-852227600998-2026 (Frontend Web Hosting)
+- Configured for Static Website Hosting with index.html set as both index and error
+  document (enabling React Router client-side path handling).
+- Hosts compiled HTML, CSS, JavaScript chunks, logos, and icons.
+- How It Is Triggered:
+  When a user opens the platform, Amazon CloudFront retrieves static bundle files
+  from this bucket and caches them across worldwide edge locations.
+
+================================================================================
+5. AMAZON CLOUDFRONT (CONTENT DELIVERY NETWORK)
+================================================================================
+WHAT THE SERVICE DOES:
+Amazon CloudFront is a web service that speeds up distribution of static and dynamic
+web content (such as .html, .css, .js, and image files) to users by delivering content
+through a worldwide network of secure data centers called edge locations.
+
+WHY WE USED IT IN APLESHAHAR:
+Satisfies Capability 3 (Content Delivery). CloudFront serves as our unified public
+entry point. It solves multiple real-world engineering hurdles:
+1. HTTPS Termination: Delivers free SSL/TLS encryption without purchasing a custom domain.
+2. Low Latency: Caches frontend assets and complaint photos at the Mumbai Edge PoP (BOM78).
+3. Reverse Proxy & Unified Domain: Routes frontend static assets, API calls (/api/*),
+   and media files (/complaints/*) through a single domain (d1gbzyhd2sdjfm.cloudfront.net),
+   completely eliminating browser Cross-Origin Resource Sharing (CORS) preflight delays
+   and Mixed Content security blocking.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- Distribution ID: E173DOOWG8BGP2
+- Domain Name: d1gbzyhd2sdjfm.cloudfront.net
+- Multi-Origin Routing Architecture:
+  1. Default Behavior (*): Routes to S3 website bucket (apleshahar-frontend-852227600998-2026).
+     Caches static React assets. Custom error responses for 403 and 404 redirect to
+     /index.html with HTTP 200 OK for Single Page Application routing.
+  2. Dynamic API Behavior (/api/*): Routes to EC2 origin (ec2-3-110-87-195.ap-south-1.compute.amazonaws.com:5000).
+     Edge caching is disabled (TTL=0). Forwards all HTTP methods (GET, POST, PUT, PATCH,
+     DELETE, OPTIONS), query strings, and Authorization headers directly to Express.
+  3. Media Caching Behavior (/complaints/*): Routes to S3 media bucket (apleshahar-media-76343).
+     Edge caches citizen photos and thumbnails with a Default TTL of 86400 seconds.
+- How It Is Triggered:
+  Every browser navigation, API fetch call, and image load initiated by citizens and
+  officers hits the nearest CloudFront edge location first.
+
+================================================================================
+6. AWS LAMBDA (SERVERLESS COMPUTE)
+================================================================================
+WHAT THE SERVICE DOES:
+AWS Lambda is a serverless, event-driven compute service that lets developers run code
+for virtually any type of application or backend service without provisioning or
+managing servers. Lambda executes only when triggered and consumes zero resources at rest.
+
+WHY WE USED IT IN APLESHAHAR:
+Satisfies Capability 1 (Supporting Serverless). Citizen photos uploaded from modern
+smartphones range from 2 MB to 10 MB. Resizing these images on the EC2 instance using
+CPU-heavy image libraries (such as Sharp/libvips) blocks the single-threaded Node.js
+event loop, starving incoming HTTP requests. Offloading thumbnail generation to an
+event-driven Lambda function guarantees zero API performance degradation and scales
+compute automatically per upload at $0 cost under the free tier.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- Function Name: ApleShahar-ImageResizer
+- Runtime: Node.js 20.x (Architecture: x86_64, Memory: 512 MB, Timeout: 30 seconds)
+- Execution Role: ApleShahar-LambdaExecutionRole (AWSLambdaBasicExecutionRole + S3 scoped access)
+- Trigger Configuration:
+  Attached to S3 bucket apleshahar-media-76343 on event s3:ObjectCreated:*.
+- Execution Logic:
+  1. Citizen uploads photo -> S3 emits s3:ObjectCreated:* event to Lambda.
+  2. Lambda receives the event containing bucket name and object key.
+  3. Recursion Guard: If the key starts with thumb-, Lambda exits immediately to
+     prevent an infinite execution loop.
+  4. Lambda downloads the original image into memory, compresses and downsamples it
+     by ~82% using an optimized Sharp pipeline.
+  5. Lambda writes the output object back to S3 under complaints/thumb-<filename>.
+  6. Real-time telemetry and execution logs are ingested into CloudWatch Logs.
+
+================================================================================
+7. AMAZON SNS (SIMPLE NOTIFICATION SERVICE)
+================================================================================
+WHAT THE SERVICE DOES:
+Amazon SNS is a fully managed pub/sub messaging service for decoupled application-to-application
+(A2A) and application-to-person (A2P) communication. It allows publishers to send messages
+to a topic, which instantly fans out notifications to subscribers across email, SMS,
+HTTP endpoints, SQS queues, and Lambda functions.
+
+WHY WE USED IT IN APLESHAHAR:
+Satisfies Capability 2 (Decoupled Messaging). In a municipal grievance system, citizens
+and ward officers require immediate notification when complaints are reported or resolved.
+Synchronous email dispatch inside HTTP request handlers causes timeouts if SMTP servers
+are slow. Decoupling notifications through Amazon SNS enables fire-and-forget publishing:
+the API publishes the message in under 15 milliseconds and returns an instant response
+to the client, while SNS handles reliable email transmission in the background.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- Topic Name: apleshahar-complaint-alerts
+- Topic ARN: arn:aws:sns:ap-south-1:852227600998:apleshahar-complaint-alerts
+- Active Subscription: Protocol EMAIL to apatade76@gmail.com (Status: Confirmed).
+- Two Independent Triggers:
+  1. Application Trigger (API Layer):
+     - When a citizen reports an issue, backend/services/complaintsService.js calls
+       sendComplaintAlert() in backend/services/notificationService.js.
+     - Uses AWS SDK v3 PublishCommand to send message containing ward number,
+       issue category, description, and geolocation.
+     - When an authority resolves an issue, sendResolutionAlert() publishes a message
+       prompting the citizen to inspect proof and provide satisfaction feedback.
+  2. Infrastructure Trigger (Monitoring Layer):
+     - Amazon CloudWatch Alarm EC2-HighCPU-Alarm is configured with an alarm action
+       targeting this SNS topic. If EC2 CPU exceeds 75% for 5 minutes, CloudWatch
+       publishes an alarm payload directly to SNS, emailing the administrator.
+
+================================================================================
+8. AWS SYSTEMS MANAGER (SSM) PARAMETER STORE
+================================================================================
+WHAT THE SERVICE DOES:
+AWS Systems Manager Parameter Store provides secure, hierarchical storage for
+configuration data management and secrets management. It stores passwords, database
+strings, Amazon Machine Image (AMI) IDs, and license codes as plain text or encrypted
+parameters (SecureString) using AWS Key Management Service (KMS).
+
+WHY WE USED IT IN APLESHAHAR:
+Storing plaintext database passwords and JWT secrets in local .env files on the EC2
+filesystem is a critical security vulnerability. SSM Parameter Store centralizes all
+application credentials in encrypted cloud storage. The server requires zero secrets
+baked into source code or container images, fulfilling production 12-factor application
+security at $0 cost under the standard parameter free tier.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- Path Prefix: /apleshahar/
+- Stored Parameters (11 total):
+  - /apleshahar/db_password (Type: SecureString, KMS encrypted: ApleShaharPassword123!)
+  - /apleshahar/jwt_secret (Type: SecureString, KMS encrypted)
+  - /apleshahar/db_host (apleshahar-postgres.claiyoqcgr10.ap-south-1.rds.amazonaws.com)
+  - /apleshahar/db_name (apleshahar)
+  - /apleshahar/db_user (postgres)
+  - /apleshahar/db_port (5432)
+  - /apleshahar/db_ssl (true)
+  - /apleshahar/authority_security_code (AUTHORITY)
+  - /apleshahar/s3_bucket_name (apleshahar-media-76343)
+  - /apleshahar/sns_topic_arn (arn:aws:sns:ap-south-1:852227600998:apleshahar-complaint-alerts)
+  - /apleshahar/aws_region (ap-south-1)
+- How It Is Triggered:
+  At container startup, backend/config/secrets.js invokes GetParametersByPathCommand
+  using the EC2 IAM Instance Profile. It decrypts secrets in-flight and loads them into
+  Node.js process.env in memory before database connection pools initialize.
+
+================================================================================
+9. AMAZON CLOUDWATCH
+================================================================================
+WHAT THE SERVICE DOES:
+Amazon CloudWatch is a monitoring and observability service that provides data and
+actionable insights for AWS, hybrid, and on-premises applications. CloudWatch collects
+monitoring metrics, logs, and events, allowing automated alarms and operational dashboards.
+
+WHY WE USED IT IN APLESHAHAR:
+Fulfills the mandatory cloud monitoring requirement. It tracks the physical health
+and resource utilization of the EC2 backend instance and ingests execution logs from
+the Lambda image resizer to verify runtime performance.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- Alarm Name: EC2-HighCPU-Alarm
+- Monitored Metric: AWS/EC2 CPUUtilization on instance i-0260cf2d7f71c8832.
+- Evaluation Period: 1 period of 300 seconds (5 minutes).
+- Threshold: CPUUtilization > 75%.
+- How It Is Triggered:
+  The EC2 hypervisor continuously pushes CPU telemetry to CloudWatch. If CPU consumption
+  exceeds 75% for 5 consecutive minutes, the alarm status transitions from OK to ALARM.
+  The state change triggers an alarm action that publishes an automated alert to
+  the Amazon SNS topic apleshahar-complaint-alerts.
+- CloudWatch Logs:
+  Log group /aws/lambda/ApleShahar-ImageResizer automatically collects execution
+  telemetry, memory usage, and execution duration (<800 ms) every time an image is
+  uploaded to S3.
+
+================================================================================
+10. AWS IAM (IDENTITY AND ACCESS MANAGEMENT)
+================================================================================
+WHAT THE SERVICE DOES:
+AWS IAM is a web service that helps administrators securely control access to AWS
+resources. IAM enables the creation of users, user groups, roles, and fine-grained
+policy documents that grant or deny access based on the principle of least privilege.
+
+WHY WE USED IT IN APLESHAHAR:
+Fulfills the mandatory security and least-privilege requirement. It ensures:
+1. Zero Hardcoded Credentials: EC2 and Lambda access AWS APIs using IAM roles and
+   temporary session tokens, completely eliminating API keys from code and Git.
+2. Team Collaboration: A dedicated developer group allows team members to deploy
+   and test without sharing root account credentials.
+
+HOW IT WORKS AND HOW IT IS TRIGGERED:
+- Role 1: ApleShahar-EC2-BackendRole (Attached as IAM Instance Profile to EC2)
+  - Trust Relationship: ec2.amazonaws.com
+  - Managed Policy: AmazonSSMManagedInstanceCore (Enables AWS Systems Manager Session
+    Manager for secure shell access without opening SSH port 22).
+  - Scoped Inline Policy ApleShaharAppPermissions:
+    - s3:PutObject and s3:GetObject restricted strictly to arn:aws:s3:::apleshahar-media-76343/*
+    - sns:Publish restricted to the complaint alerts topic
+    - ssm:GetParametersByPath, ssm:GetParameter on arn:aws:ssm:ap-south-1:852227600998:parameter/apleshahar/*
+  - How It Is Triggered:
+    Whenever the Node.js backend uses AWS SDK v3 (@aws-sdk/client-s3, @aws-sdk/client-sns,
+    @aws-sdk/client-ssm), the SDK automatically queries the local EC2 metadata service
+    (http://169.254.169.254/latest/meta-data/) via IMDSv2 to obtain short-lived STS tokens.
+- Role 2: ApleShahar-LambdaExecutionRole (Attached to Lambda function)
+  - Grants CloudWatch Logs writing permissions and scoped S3 read/write access.
+- User Group: Developers
+  - Contains team user accounts (arlen, hansy) managed under account alias cclmp-apleshahar,
+    enforcing role-based access control across team members.
+================================================================================
+END OF SPECIFICATION DOCUMENT
+================================================================================
