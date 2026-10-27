@@ -70,7 +70,11 @@ export async function getComplaintById(complaintId) {
 export async function updateComplaintStatus(complaintId, status, estimatedTime) {
   const sql = `
     UPDATE complaints
-    SET status = $1, estimated_time = $2, updated_at = NOW()
+    SET 
+      status = $1, 
+      estimated_time = COALESCE($2, estimated_time),
+      resolved_at = CASE WHEN $1 = 'resolved' THEN COALESCE(resolved_at, NOW()) ELSE NULL END,
+      updated_at = NOW()
     WHERE id = $3
     RETURNING *;
   `;

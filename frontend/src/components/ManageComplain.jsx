@@ -80,12 +80,12 @@ export default function ManageComplain() {
     try {
       setSaving(true);
 
-      // Update status
-      await updateComplaintStatus(complaintId, status, estimatedTime);
-
-      // If resolved, also save the resolve description + optional photo
-      if (status === 'resolved' || resolvedDescription || resolvedPhotoFile) {
+      // If resolved, call the resolve endpoint with resolution proof
+      if (status === 'resolved') {
         await resolveComplaint(complaintId, resolvedDescription, resolvedPhotoFile);
+      } else {
+        // Otherwise update status (pending, in_progress, rejected) and estimated time
+        await updateComplaintStatus(complaintId, status, estimatedTime);
       }
 
       setComplaint((prev) =>
@@ -94,7 +94,7 @@ export default function ManageComplain() {
       setSavedMessage(
         status === 'resolved'
           ? 'Marked as resolved. The citizen can now review and close this complaint.'
-          : 'Changes saved successfully.'
+          : `Status updated to ${STATUS_LABELS[status] || status}.`
       );
     } catch (err) {
       setError(handleApiError(err, navigate));
@@ -398,52 +398,56 @@ export default function ManageComplain() {
                     />
                   </div>
 
-                  {/* Resolution description */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Resolution description{status === 'resolved' ? ' *' : ' (optional)'}
-                    </label>
-                    <textarea
-                      rows="4"
-                      value={resolvedDescription}
-                      onChange={(e) => setResolvedDescription(e.target.value)}
-                      placeholder="Describe what was done to fix the issue"
-                      className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-100 resize-none"
-                    />
-                  </div>
+                  {/* Resolution description & photo — shown only when marking as resolved */}
+                  {status === 'resolved' && (
+                    <>
+                      <div className="space-y-3">
+                        <label className="text-sm font-semibold text-slate-700">
+                          Resolution description *
+                        </label>
+                        <textarea
+                          rows="4"
+                          value={resolvedDescription}
+                          onChange={(e) => setResolvedDescription(e.target.value)}
+                          placeholder="Describe what was done to fix the issue"
+                          className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-100 resize-none"
+                          required
+                        />
+                      </div>
 
-                  {/* Resolution image */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Resolution photo {status === 'resolved' ? '(recommended)' : '(optional)'}
-                    </label>
-                    <div className="rounded-3xl border border-slate-200 bg-white p-4">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        onChange={handleResolvedPhotoChange}
-                        className="w-full text-sm text-slate-500 file:rounded-full file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-slate-700"
-                      />
-                      {resolvedPhotoPreview && (
-                        <div className="mt-4 relative">
-                          <img
-                            src={resolvedPhotoPreview}
-                            alt="Resolved evidence"
-                            className="h-40 w-full rounded-3xl object-cover"
+                      <div className="space-y-3">
+                        <label className="text-sm font-semibold text-slate-700">
+                          Resolution photo (optional)
+                        </label>
+                        <div className="rounded-3xl border border-slate-200 bg-white p-4">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleResolvedPhotoChange}
+                            className="w-full text-sm text-slate-500 file:rounded-full file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-slate-700"
                           />
-                          <button
-                            type="button"
-                            onClick={() => { setResolvedPhotoFile(null); setResolvedPhotoPreview(null); }}
-                            className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-950/80 text-white transition hover:bg-slate-950"
-                          >
-                            ×
-                          </button>
-                          <p className="text-xs text-slate-500 mt-2">{resolvedPhotoFile?.name}</p>
+                          {resolvedPhotoPreview && (
+                            <div className="mt-4 relative">
+                              <img
+                                src={resolvedPhotoPreview}
+                                alt="Resolved evidence"
+                                className="h-40 w-full rounded-3xl object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => { setResolvedPhotoFile(null); setResolvedPhotoPreview(null); }}
+                                className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-950/80 text-white transition hover:bg-slate-950"
+                              >
+                                ×
+                              </button>
+                              <p className="text-xs text-slate-500 mt-2">{resolvedPhotoFile?.name}</p>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    </>
+                  )}
 
                   <button
                     type="submit"
