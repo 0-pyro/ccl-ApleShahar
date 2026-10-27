@@ -1,7 +1,18 @@
 {
+  "name": "apleshaharbackend",
+  "version": "1.0.0",
+  "description": "ApleShahar Backend API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "db:migrate": "node scripts/migrate.js"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
     "@aws-sdk/client-sns": "^3.1152.0",
+    "@aws-sdk/client-ssm": "^3.1152.0",
     "@turf/turf": "^7.3.4",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
@@ -13,15 +24,6 @@
     "nodemon": "^3.1.14",
     "pg": "^8.23.1"
   },
-  "name": "apleshaharbackend",
-  "version": "1.0.0",
-  "description": "��#\u0000 \u0000A\u0000p\u0000l\u0000e\u0000S\u0000h\u0000a\u0000h\u0000a\u0000r\u0000B\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000\r\u0000 \u0000",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dmelloarlen/ApleShaharBackend.git"
@@ -29,12 +31,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/dmelloarlen/ApleShaharBackend/issues"
-  },
-  "homepage": "https://github.com/dmelloarlen/ApleShaharBackend#readme",
-  "devDependencies": {
-    "supabase": "^2.84.4"
-  }
+  "type": "module"
 }

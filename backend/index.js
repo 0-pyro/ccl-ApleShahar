@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes.js";
 import complaintsRoutes from "./routes/complaintsRoutes.js";
 import facilityRoutes from "./routes/facilityRoutes.js";
 import { initDb } from "./config/db.js";
+import { loadSecrets } from "./config/secrets.js";
 
 dotenv.config();
 
@@ -68,6 +69,8 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  // Asynchronously load production secrets from AWS SSM Parameter Store if available
+  await loadSecrets();
   // Run schema auto-migration on launch
   await initDb();
 });

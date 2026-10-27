@@ -4,32 +4,38 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Build configuration: Supports both a full connection string (DATABASE_URL) or individual DB_* variables
-const poolConfig = process.env.DATABASE_URL
-  ? {
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
-        : false,
-    }
-  : {
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      database: process.env.DB_NAME || 'apleshahar',
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
-        : false,
-    };
+let poolInstance = null;
 
-const pool = new Pool(poolConfig);
+export function getPool() {
+  if (!poolInstance) {
+    const poolConfig = process.env.DATABASE_URL
+      ? {
+          connectionString: process.env.DATABASE_URL,
+          ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
+        }
+      : {
+          host: process.env.DB_HOST || 'localhost',
+          port: parseInt(process.env.DB_PORT || '5432', 10),
+          database: process.env.DB_NAME || 'apleshahar',
+          user: process.env.DB_USER || 'postgres',
+          password: process.env.DB_PASSWORD || 'postgres',
+          ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
+        };
 
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle PostgreSQL client:', err.message);
-});
+    poolInstance = new Pool(poolConfig);
 
-export const query = (text, params) => pool.query(text, params);
+    poolInstance.on('error', (err) => {
+      console.error('Unexpected error on idle PostgreSQL client:', err.message);
+    });
+  }
+  return poolInstance;
+}
+
+export const query = (text, params) => getPool().query(text, params);
 
 /**
  * Automatically creates all tables on startup if they don't already exist.
@@ -80,12 +86,16 @@ export async function initDb() {
   `;
 
   try {
-    await pool.query(schemaSql);
-    console.log('✅ PostgreSQL Schema verified: tables (users, complaints, facility_requests) ready.');
+    await getPool().query(schemaSql);
+    console.log('[Database] PostgreSQL Schema verified: tables (users, complaints, facility_requests) ready.');
   } catch (err) {
-    console.warn('⚠️ Database connection / schema auto-init deferred:', err.message);
+    console.warn('[Database] Database connection / schema auto-init deferred:', err.message);
     console.warn('   Ensure DB_HOST, DB_NAME, DB_USER, and DB_PASSWORD are set correctly.');
   }
 }
 
-export default pool;
+export default {
+  query,
+  getPool,
+  initDb,
+};
