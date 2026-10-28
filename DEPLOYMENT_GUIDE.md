@@ -1,7 +1,7 @@
 # ApleShahar AWS Cloud Deployment Guide
 
 This guide provides comprehensive instructions for deploying the ApleShahar cloud infrastructure. It covers:
-1. Architecture Mapping: How each component fulfills the original migration plan (aws_mig_plan/image.png).
+1. Architecture Mapping: How each component fulfills the cloud architecture design (aws_mig_plan/image.png).
 2. Path A: Automated Deployment: Using our infrastructure automation scripts (aws_mig_plan/deploy-infra.ps1 and aws_mig_plan/deploy-infra.sh).
 3. Path B: Manual Deployment: Step-by-step click guide in the AWS Management Console.
 4. The EC2 and Application Step: Connecting to EC2 and launching the containerized backend.
@@ -11,7 +11,7 @@ This guide provides comprehensive instructions for deploying the ApleShahar clou
 
 ---
 
-## 1. Architecture Mapping to Original Plan (image.png)
+## 1. Architecture Mapping to System Specification (image.png)
 
 | Cloud Area / Requirement | AWS Service in Plan | Functional Role in ApleShahar | Implementation Method |
 | :--- | :--- | :--- | :--- |

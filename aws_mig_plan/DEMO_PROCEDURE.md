@@ -1,6 +1,6 @@
 # ApleShahar End-to-End Cloud Platform & Application Demonstration Guide
 
-This document provides a unified, step-by-step demonstration procedure for the **ApleShahar** civic grievance and municipal facility management platform. It maps every component from the target architecture ([`aws_mig_plan/image.png`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/image.png) and [`aws_mig_plan/MIGRATION_PLAN.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/MIGRATION_PLAN.md)) to the live AWS resources, followed by an end-to-end walkthrough of the live web application and console verification.
+This document provides a unified, step-by-step demonstration procedure for the **ApleShahar** civic grievance and municipal facility management platform. It maps every component from the system architecture specification ([`aws_mig_plan/image.png`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/image.png) and [`aws_mig_plan/ARCHITECTURE_DIAGRAM.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/ARCHITECTURE_DIAGRAM.md)) to the live AWS resources, followed by an end-to-end walkthrough of the live web application and console verification.
 
 ---
 
@@ -169,7 +169,7 @@ Now transition to the AWS Management Console to prove every architectural claim 
    - Click `apleshahar-postgres` (PostgreSQL 16.10, `db.t3.micro`, 20 GB gp3).
    - Connectivity tab: Highlight **Publicly Accessible = No**.
    - Show DB Subnet Group: `apleshahar-db-subnets` spanning private subnets across two AZs.
-2. Explain to examiners: *The database auto-initialized schemas (`users`, `complaints`, `facility_requests`) and performance indexes (`idx_complaints_ward`, `idx_complaints_status`, `idx_users_email`). Decoupled migrations can be executed independently via `npm run db:migrate`.*
+2. Explain to examiners: *The database auto-initialized schemas (`users`, `complaints`, `facility_requests`) and performance indexes (`idx_complaints_ward`, `idx_complaints_status`, `idx_users_email`). Schema setup can also be executed independently via `npm run db:init`.*
 
 ---
 

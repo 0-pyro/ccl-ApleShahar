@@ -54,6 +54,3 @@ export async function uploadImage(fileBuffer, mimetype, folder = 'uploads') {
   const port = process.env.PORT || 5000;
   return `http://localhost:${port}/uploads/${folder}/${path.basename(localFilePath)}`;
 }
-
-// Backward compatibility alias for existing controller calls
-export const uploadImageToSupabase = uploadImage;

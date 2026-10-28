@@ -39,7 +39,7 @@ export const query = (text, params) => getPool().query(text, params);
 
 /**
  * Automatically creates all tables on startup if they don't already exist.
- * This guarantees zero-touch migration when connecting to a fresh RDS instance.
+ * This guarantees zero-touch initialization when connecting to a fresh RDS instance.
  */
 export async function initDb() {
   const schemaSql = `

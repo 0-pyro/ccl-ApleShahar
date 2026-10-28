@@ -94,10 +94,10 @@ hardware provisioning, storage allocation, operating system patching, automated
 snapshots, continuous backups, and multi-zone replication.
 
 WHY WE USED IT IN APLESHAHAR:
-ApleShahar was migrated away from proprietary Supabase client query libraries to native
-relational PostgreSQL. Using managed RDS provides robust ACID transactions, foreign
-key constraints between citizens, complaints, and ward metrics, automated daily backups,
-and decoupled storage that survives application crashes or EC2 instance termination.
+ApleShahar uses native relational PostgreSQL managed by AWS. Using managed RDS provides
+robust ACID transactions, foreign key constraints between citizens, complaints, and ward
+metrics, automated daily backups, and decoupled storage that survives application crashes
+or EC2 instance termination.
 
 HOW IT WORKS AND HOW IT IS TRIGGERED:
 - DB Identifier: apleshahar-postgres
@@ -113,7 +113,7 @@ HOW IT WORKS AND HOW IT IS TRIGGERED:
   - User registration and login validation (SELECT / INSERT on table users).
   - Grievance reporting and status tracking (SELECT / INSERT / UPDATE on table complaints).
   - Municipal facility requests (table facility_requests).
-  - Standalone migration scripts (npm run db:migrate executes scripts/migrate.js).
+  - Standalone schema initialization scripts (npm run db:init executes scripts/init-db.js).
 
 ================================================================================
 4. AMAZON S3 (SIMPLE STORAGE SERVICE)

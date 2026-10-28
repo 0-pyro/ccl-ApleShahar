@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "db:migrate": "node scripts/migrate.js",
+    "db:init": "node scripts/init-db.js",
     "db:query": "node scripts/query.js"
   },
   "dependencies": {

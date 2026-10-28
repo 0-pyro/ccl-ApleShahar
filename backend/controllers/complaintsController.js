@@ -1,4 +1,4 @@
-import { uploadImageToSupabase } from '../services/uploadService.js';
+import { uploadImage } from '../services/uploadService.js';
 import {
   createComplaint,
   getComplaintsByWard,
@@ -15,7 +15,7 @@ export async function submitComplaint(req, res) {
     const { prob_description, ward, location_coords, issue_type } = req.body;
     const citizenId = req.user.id;
 
-    const imageUrl = await uploadImageToSupabase(
+    const imageUrl = await uploadImage(
       req.file.buffer,
       req.file.mimetype,
       'complaints'
@@ -94,7 +94,7 @@ export async function resolveComplaintHandler(req, res) {
 
     let resolveImageUrl = null;
     if (req.file) {
-      resolveImageUrl = await uploadImageToSupabase(
+      resolveImageUrl = await uploadImage(
         req.file.buffer,
         req.file.mimetype,
         'resolved'

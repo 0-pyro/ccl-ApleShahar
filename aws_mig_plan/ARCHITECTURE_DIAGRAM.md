@@ -104,7 +104,7 @@ flowchart TD
 ### 4. Relational Database Layer (Amazon RDS PostgreSQL)
 - **Database**: `apleshahar-postgres` (PostgreSQL 16.10, `db.t3.micro`, 20 GB gp3).
 - **Subnet Group**: `apleshahar-db-subnets` spanning both private subnets.
-- **Features**: Connection pooling via `pg.Pool`, enforced SSL encryption, and automated schema migrations (`initDb()` and `npm run db:migrate`).
+- **Features**: Connection pooling via `pg.Pool`, enforced SSL encryption, and automated schema initialization (`initDb()` and `npm run db:init`).
 
 ### 5. Serverless Media Pipeline (AWS Lambda & Amazon S3)
 - **Bucket**: `apleshahar-media-76343`.

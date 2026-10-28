@@ -74,15 +74,15 @@ const schemaSql = `
   CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 `;
 
-async function runMigration() {
-  console.log('[Migration] Connecting to PostgreSQL database...');
+async function runInit() {
+  console.log('[Database] Connecting to PostgreSQL database...');
   const client = await pool.connect();
   try {
-    console.log('[Migration] Executing schema DDL and indexes...');
+    console.log('[Database] Executing schema DDL and indexes...');
     await client.query(schemaSql);
-    console.log('[Migration] Schema migration completed successfully: tables (users, complaints, facility_requests) and indexes verified.');
+    console.log('[Database] Schema initialization completed successfully: tables (users, complaints, facility_requests) and indexes verified.');
   } catch (err) {
-    console.error('[Migration] Failed to execute database migration:', err.message);
+    console.error('[Database] Failed to execute database schema initialization:', err.message);
     process.exit(1);
   } finally {
     client.release();
@@ -90,4 +90,4 @@ async function runMigration() {
   }
 }
 
-runMigration();
+runInit();

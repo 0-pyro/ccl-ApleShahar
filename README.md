@@ -1,19 +1,20 @@
-# ApleShahar Cloud Workspace
+# ApleShahar - Cloud-Native Civic Grievance & Municipal Management Platform
 
-This repository coordinates the full-stack architecture for **ApleShahar**, a civic grievance redressal and public infrastructure platform for municipal corporations (VVCMC / Mumbai Metropolitan Region).
+This repository contains the full-stack cloud-native codebase for **ApleShahar**, an enterprise civic grievance redressal and municipal facility management platform engineered for municipal corporations (VVCMC / Mumbai Metropolitan Region) and deployed on Amazon Web Services (AWS).
 
-- **Frontend**: React + Vite + Tailwind CSS (`frontend/`)
-- **Backend**: Containerized Node.js + Express REST API (`backend/`)
-- **Cloud Architecture**: AWS (EC2, VPC, RDS PostgreSQL, S3, IAM, SNS, Lambda, CloudWatch)
+- **Frontend**: React 19 + Vite Single Page Application (`frontend/`)
+- **Backend**: Containerized Node.js 20 + Express REST API (`backend/`)
+- **Cloud Infrastructure**: AWS Native Architecture in `ap-south-1` (Mumbai) across VPC, EC2, RDS PostgreSQL, S3, CloudFront CDN, Lambda, SNS, SSM Parameter Store, IAM, and CloudWatch.
 
 ---
 
 ## Documentation Index
 
-- **Engineering Migration Report (What, Why, How)**: [`aws_mig_plan/PROJECT_MIGRATION_REPORT.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/PROJECT_MIGRATION_REPORT.md)
-- **Live AWS Infrastructure & Credentials**: [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md)
+- **System Architecture Specification & Diagrams**: [`aws_mig_plan/ARCHITECTURE_DIAGRAM.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/ARCHITECTURE_DIAGRAM.md)
+- **Live AWS Infrastructure & Resource Inventory**: [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md)
+- **End-to-End Demonstration Procedure**: [`aws_mig_plan/DEMO_PROCEDURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/DEMO_PROCEDURE.md)
+- **AWS Services Technical Reference**: [`aws_mig_plan/AWS_SERVICES_OVERVIEW.txt`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/AWS_SERVICES_OVERVIEW.txt)
 - **Deployment & Verification Guide**: [`DEPLOYMENT_GUIDE.md`](file:///C:/Users/arnav/Desktop/cclmp/DEPLOYMENT_GUIDE.md)
-- **Target Architecture Specification**: [`aws_mig_plan/MIGRATION_PLAN.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/MIGRATION_PLAN.md)
 
 ---
 
@@ -21,26 +22,29 @@ This repository coordinates the full-stack architecture for **ApleShahar**, a ci
 
 ```text
 cclmp/
-├── frontend/             # React + Vite client application (Port 5173)
+├── frontend/             # React 19 + Vite client application
 │   ├── src/
 │   ├── .env.example
 │   └── package.json
-├── backend/              # Node.js + Express API server (Port 5000)
-│   ├── config/           # PostgreSQL connection pool and auto-migration
+├── backend/              # Node.js 20 + Express API server (Port 5000)
+│   ├── config/           # PostgreSQL connection pool and runtime secrets
 │   ├── controllers/      # Route controllers (Auth, Complaints, Facility)
 │   ├── routes/           # Express API routes
 │   ├── services/         # S3 Upload, SNS Notifications, DB Queries
-│   ├── Dockerfile        # Production container
+│   ├── scripts/          # Database schema initialization & verification
+│   ├── Dockerfile        # Production Docker container
 │   ├── docker-compose.yml# Container orchestration
 │   └── package.json
-├── aws_mig_plan/         # AWS Migration plans, scripts, and documentation
+├── aws_mig_plan/         # AWS cloud infrastructure scripts and diagrams
 │   ├── deploy-infra.ps1  # Automated AWS CLI infrastructure provisioner (PowerShell)
 │   ├── deploy-infra.sh   # Automated AWS CLI infrastructure provisioner (Bash)
 │   ├── create-iam-users.ps1 # Team IAM account creation script
 │   ├── cleanup.ps1       # Automated resource teardown script
-│   ├── lambda/           # Serverless thumbnail generator
+│   ├── lambda/           # Serverless image resizer (Node.js 20.x, Sharp)
+│   ├── diagramrefs/      # Official AWS Architecture diagrams (PNG, SVG, HTML)
 │   ├── LIVE_INFRASTRUCTURE.md
-│   └── PROJECT_MIGRATION_REPORT.md
+│   ├── DEMO_PROCEDURE.md
+│   └── ARCHITECTURE_DIAGRAM.md
 ├── DEPLOYMENT_GUIDE.md   # Step-by-step deployment instructions
 ├── package.json          # Root workspace scripts
 └── README.md
@@ -76,7 +80,7 @@ Or run individually:
 
 ## Cloud Deployment (AWS)
 
-To deploy the infrastructure on AWS:
+To review and deploy the live infrastructure on AWS:
 1. Review the provisioned resource endpoints in [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md).
-2. Follow Section 5 of [`DEPLOYMENT_GUIDE.md`](file:///C:/Users/arnav/Desktop/cclmp/DEPLOYMENT_GUIDE.md) to launch the backend container on EC2.
+2. Follow [`DEPLOYMENT_GUIDE.md`](file:///C:/Users/arnav/Desktop/cclmp/DEPLOYMENT_GUIDE.md) to launch the backend container on EC2.
 3. Deploy the thumbnail generator in `aws_mig_plan/lambda/` to AWS Lambda.

@@ -1,4 +1,4 @@
-import { uploadImageToSupabase } from '../services/uploadService.js';
+import { uploadImage } from '../services/uploadService.js';
 import {
   createFacilityRequest,
   getAllFacilityRequests,
@@ -24,7 +24,7 @@ export async function submitFacilityRequest(req, res) {
       locationCoords = { lat, lng };
     }
 
-    const imageUrl = await uploadImageToSupabase(
+    const imageUrl = await uploadImage(
       req.file.buffer,
       req.file.mimetype,
       'facility_requests'

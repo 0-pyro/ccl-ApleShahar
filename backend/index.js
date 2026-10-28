@@ -73,6 +73,6 @@ app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   // Asynchronously load production secrets from AWS SSM Parameter Store if available
   await loadSecrets();
-  // Run schema auto-migration on launch
+  // Run schema auto-initialization on launch
   await initDb();
 });

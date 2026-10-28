@@ -2,7 +2,7 @@
                         APLESHAHAR - LIVE AWS CLOUD ARCHITECTURE SCHEMATIC
 ====================================================================================================
 Deployment Region: ap-south-1 (Mumbai)
-Architecture Type: Microservices-Ready Monorepo Migration from Supabase to AWS Native Stack
+Architecture Type: Cloud-Native Microservices-Ready Monorepo on AWS Native Stack
 Platform Status  : 100% Live, Verified, and Operational
 Deliverable Type : Plain-Text ASCII Schematic Architecture Diagram
 ====================================================================================================
