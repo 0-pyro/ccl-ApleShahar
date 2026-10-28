@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApleShahar - AWS Cloud Architecture Diagram</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0b1120;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .header {
+      width: 100%;
+      max-width: 1320px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .badge {
+      background: #064e3b;
+      color: #34d399;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #059669;
+    }
+    .diagram-container {
+      width: 100%;
+      max-width: 1320px;
+      background: #0f172a;
+      border-radius: 12px;
+      border: 1px solid #1e293b;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+    .diagram-container img, .diagram-container svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .footer {
+      width: 100%;
+      max-width: 1320px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ApleShahar Architecture Diagram - Live AWS Deployment</h1>
+    <span class="badge">Region: ap-south-1</span>
+  </div>
+  <div class="diagram-container">
+    <img src="./architecture_diagram.svg" alt="ApleShahar AWS Cloud Architecture Diagram" />
+  </div>
+  <div class="footer">
+    ApleShahar Civic Grievance & Municipal Platform | AWS Cloud Infrastructure | Generated October 2026
+  </div>
+</body>
+</html>

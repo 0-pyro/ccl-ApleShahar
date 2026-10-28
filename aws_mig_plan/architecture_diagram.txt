@@ -1,0 +1,180 @@
+====================================================================================================
+                        APLESHAHAR - LIVE AWS CLOUD ARCHITECTURE SCHEMATIC
+====================================================================================================
+Deployment Region: ap-south-1 (Mumbai)
+Architecture Type: Microservices-Ready Monorepo Migration from Supabase to AWS Native Stack
+Platform Status  : 100% Live, Verified, and Operational
+Deliverable Type : Plain-Text ASCII Schematic Architecture Diagram
+====================================================================================================
+
+                                +-----------------------------------------+
+                                |  CITIZEN / MUNICIPAL AUTHORITY CLIENT   |
+                                |       Web Browser (Desktop / Mobile)    |
+                                +-----------------------------------------+
+                                                     |
+                                                     | HTTPS (Port 443)
+                                                     v
+====================================================================================================
+1. EDGE DISTRIBUTION & CDN TIER (Amazon CloudFront)
+====================================================================================================
+Distribution Domain : d1gbzyhd2sdjfm.cloudfront.net
+Distribution ID     : E173DOOWG8BGP2
+Edge Locations      : Mumbai PoP (Global Edge Network)
+SSL Termination     : AWS ACM Default CloudFront Wildcard Certificate (*.cloudfront.net)
+
+                     +-------------------------------------------------------+
+                     |                 AMAZON CLOUDFRONT CDN                 |
+                     |           Multi-Origin Reverse Proxy Router           |
+                     +-------------------------------------------------------+
+                           /                         |                         \
+                          /                          |                          \
+       Default Cache (*) /              /api/* Path  |              /complaints/*\
+      SPA Web Assets    /               Dynamic API  |               Cached Media \
+                       v                             v                             v
++-----------------------------+   +-----------------------------+   +------------------------------+
+| S3 FRONTEND ORIGIN          |   | EC2 BACKEND ORIGIN          |   | S3 MEDIA ORIGIN              |
+| apleshahar-frontend-...     |   | ec2-3-110-87-195.ap-south-1 |   | apleshahar-media-76343       |
+| HTTP Port 80                |   | Port 5000 (Pass-Through)    |   | S3 REST Endpoint             |
+| Cache: TTL 86400s           |   | Cache: Disabled (TTL=0)     |   | Cache: TTL 86400s            |
+| SPA Routing: 403/404 -> 200 |   | Methods: GET,POST,PUT,DEL...|   | Methods: GET, HEAD           |
++-----------------------------+   +-----------------------------+   +------------------------------+
+              |                                  |                                  |
+              |                                  |                                  |
+              v                                  v                                  v
+====================================================================================================
+2. STORAGE & STATIC HOSTING TIER (Amazon S3)
+====================================================================================================
++---------------------------------------------+   +------------------------------------------------+
+| BUCKET: apleshahar-frontend-852227600998-...|   | BUCKET: apleshahar-media-76343                 |
+| Role   : React 19 / Vite Static Website SPA |   | Role   : Municipal Citizen Image Storage       |
+| Files  : index.html, assets/*.js, *.css     |   | Paths  : complaints/* (Originals)              |
+| Access : Public Read Website Hosting        |   |          complaints/thumb-* (Thumbnails)       |
++---------------------------------------------+   | Events : s3:ObjectCreated:* -> AWS Lambda      |
+                                                  +------------------------------------------------+
+                                                                     |            ^
+                                                                     |            |
+                                                                     | Triggers   | Writes
+                                                                     | Event      | Thumbnail
+                                                                     v            |
+====================================================================================================
+3. SERVERLESS IMAGE PROCESSING TIER (AWS Lambda)
+====================================================================================================
++--------------------------------------------------------------------------------------------------+
+| FUNCTION: ApleShahar-ImageResizer                                                                |
+| Runtime : Node.js 20.x | Memory: 512 MB | Timeout: 30s | IAM: ApleShahar-LambdaExecutionRole     |
+| Logic   : Sharp engine downsamples high-res citizen grievance photos by ~82% into thumb-[key]    |
+| Guard   : Recursion Prevention Guard terminates on thumb-* keys immediately                      |
++--------------------------------------------------------------------------------------------------+
+
+                                                 |
+                                                 | /api/* Dynamic Requests
+                                                 v
+====================================================================================================
+4. NETWORKING & COMPUTE TIER (Amazon VPC & Amazon EC2)
+====================================================================================================
+Amazon VPC: vpc-0004b4f628adae8df (CIDR Block: 10.0.0.0/16)
+Internet Gateway: apleshahar-igw (Attached to VPC route table)
+
+  +----------------------------------------------------------------------------------------------+
+  | PUBLIC SUBNET: apleshahar-public-1a (10.0.1.0/24 | AZ: ap-south-1a)                          |
+  |                                                                                              |
+  |   +--------------------------------------------------------------------------------------+   |
+  |   | EC2 INSTANCE: apleshahar-backend-server (i-0260cf2d7f71c8832)                        |   |
+  |   | Instance Type : t3.micro (2 vCPU, 1 GB RAM, Ubuntu 24.04 LTS)                        |   |
+  |   | Public IPv4   : 3.110.87.195 | Private IP: 10.0.1.205                                |   |
+  |   | Security Group: sg-062252861b7de2668 (Inbound Port 5000 from CloudFront/Public)     |   |
+  |   | IAM Role      : ApleShahar-EC2-BackendRole (Instance Profile, IMDSv2 enforced)       |   |
+  |   |                                                                                      |   |
+  |   | Container     : apleshahar-backend (Docker container running on Port 5000)           |   |
+  |   | Framework     : Node.js 20 / Express.js REST API                                     |   |
+  |   | Responsibilities:                                                                    |   |
+  |   |   - Native JWT authentication & bcrypt password hashing                              |   |
+  |   |   - Direct PostgreSQL connection pooling (pg Pool) with SSL support                  |   |
+  |   |   - Citizen complaint submission, status tracking, facility requests                 |   |
+  |   |   - S3 PutObject media upload via AWS SDK v3                                         |   |
+  |   |   - SNS transactional alert publishing via AWS SDK v3                                 |   |
+  |   |   - Dynamic SSM parameter retrieval during server boot                               |   |
+  |   +--------------------------------------------------------------------------------------+   |
+  +----------------------------------------------------------------------------------------------+
+           |                                  |                                  |
+           | DB Query (Port 5432)             | S3 Upload                        | SNS Alert
+           v                                  v                                  v
+====================================================================================================
+5. ISOLATED MANAGED DATABASE TIER (Amazon RDS PostgreSQL)
+====================================================================================================
+Subnet Group: apleshahar-db-subnet-group
+Private Subnets:
+  - apleshahar-private-1a (10.0.2.0/24 | AZ: ap-south-1a)
+  - apleshahar-private-1b (10.0.3.0/24 | AZ: ap-south-1b)
+
+  +----------------------------------------------------------------------------------------------+
+  | PRIVATE DATABASE SUBNETS (Completely Isolated | Zero Internet Gateway Route)                 |
+  |                                                                                              |
+  |   +--------------------------------------------------------------------------------------+   |
+  |   | RDS INSTANCE: apleshahar-postgres                                                    |   |
+  |   | Engine        : PostgreSQL 16.10-R1 (db.t3.micro | 20 GB gp3 SSD storage)            |   |
+  |   | Endpoint      : apleshahar-postgres.claiyoqcgr10.ap-south-1.rds.amazonaws.com:5432    |   |
+  |   | Public Access : NO (Strictly private internal endpoint)                              |   |
+  |   | Security Group: apleshahar-rds-sg (Port 5432 ingress ONLY from EC2 Security Group)   |   |
+  |   | SSL Security  : Enforced SSL/TLS connections required                                |   |
+  |   |                                                                                      |   |
+  |   | Relational Database Schemas:                                                         |   |
+  |   |   - users              : Citizen and municipal admin account records, roles, hashes  |   |
+  |   |   - complaints         : Grievance reports, locations, image links, statuses         |   |
+  |   |   - facility_requests  : Municipal hall and infrastructure bookings                  |   |
+  |   +--------------------------------------------------------------------------------------+   |
+  +----------------------------------------------------------------------------------------------+
+
+====================================================================================================
+6. DECOUPLED MESSAGING & NOTIFICATION TIER (Amazon SNS)
+====================================================================================================
++--------------------------------------------------------------------------------------------------+
+| TOPIC: apleshahar-complaint-alerts                                                               |
+| ARN  : arn:aws:sns:ap-south-1:852227600998:apleshahar-complaint-alerts                           |
+| Role : Publish-Subscribe asynchronous event delivery bus                                         |
+| Publishers:                                                                                      |
+|   1. EC2 Backend API (on new complaint creation & status resolution)                             |
+|   2. CloudWatch Alarm (on critical compute infrastructure breach)                                |
+| Subscriptions:                                                                                   |
+|   - Protocol: EMAIL | Target: apatade76@gmail.com (Status: Confirmed)                            |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
+                               +-----------------------------------+
+                               | EMAIL NOTIFICATION RECIPIENT      |
+                               | Municipal Officers & Citizens     |
+                               +-----------------------------------+
+
+====================================================================================================
+7. SECURITY, SECRETS MANAGEMENT & OBSERVABILITY
+====================================================================================================
++--------------------------------------------------------------------------------------------------+
+| AWS SSM PARAMETER STORE                                                                          |
+| Path: /apleshahar/* (11 Parameters)                                                              |
+|   - Encrypted SecureString (KMS key alias/aws/ssm): db_password, jwt_secret                      |
+|   - Standard String: db_host, db_port, db_name, db_user, s3_bucket_media, sns_topic_arn, ...    |
+| Impact: Zero credentials stored on EC2 disks or committed in git repos                           |
++--------------------------------------------------------------------------------------------------+
+| AMAZON CLOUDWATCH                                                                                |
+| Alarm: EC2-HighCPU-Alarm (Threshold: CPUUtilization > 75% for 5 minutes)                         |
+| Alarm Action: Automatically publishes to SNS Topic apleshahar-complaint-alerts                   |
+| Log Group: /aws/lambda/ApleShahar-ImageResizer (Real-time telemetry and execution performance)    |
++--------------------------------------------------------------------------------------------------+
+| AWS IDENTITY AND ACCESS MANAGEMENT (IAM)                                                         |
+| Principle: Strict Least Privilege Access                                                         |
+|   - Role ApleShahar-EC2-BackendRole: EC2 instance profile granting SSM, S3 PutObject, SNS Publish|
+|   - Role ApleShahar-LambdaExecutionRole: Lambda execution role for S3 Read/Write & CloudWatch Logs|
+|   - Group Developers: Dedicated IAM user accounts (arlen, hansy) for team management             |
++--------------------------------------------------------------------------------------------------+
+
+====================================================================================================
+SUMMARY OF NETWORK DATA FLOWS
+====================================================================================================
+Flow 1 (User App Access)       : User -> CloudFront (443) -> S3 Frontend (apleshahar-frontend-...)
+Flow 2 (API Operations)        : User -> CloudFront (/api/*) -> IGW -> EC2:5000 -> RDS:5432
+Flow 3 (Image Upload & Resize) : User -> EC2 -> S3 Media (complaints/*) -> S3 Event -> Lambda -> S3
+Flow 4 (Image Edge Viewing)    : User -> CloudFront (/complaints/*) -> S3 Media
+Flow 5 (Transactional Alerts)  : EC2 Complaint Handler -> SNS Topic -> Email (apatade76@gmail.com)
+Flow 6 (Secret Resolution)     : EC2 Boot -> IAM IMDSv2 -> SSM Parameter Store (/apleshahar/*)
+Flow 7 (Metric Monitoring)     : EC2 CPU Usage -> CloudWatch Alarm (>75%) -> SNS Topic -> Alert Email
+====================================================================================================
