@@ -1,0 +1,417 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1720 1140" width="1720" height="1140" style="background:#FFFFFF; font-family:'Amazon Ember', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Drop Shadows matching official AWS diagram guidelines -->
+    <filter id="boxShadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+    <filter id="iconShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+
+    <!-- Markers for Arrows -->
+    <marker id="arrowDark" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#232F3E"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0073BB"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#ED7100"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#1B8C00"/>
+    </marker>
+    <marker id="arrowMagenta" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#E7157B"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#CC2264"/>
+    </marker>
+  </defs>
+
+  <!-- ========================================== -->
+  <!-- 1. EXTERNAL CLIENT / USERS (OUTSIDE CLOUD) -->
+  <!-- ========================================== -->
+  <g id="externalClientGroup" transform="translate(25, 230)">
+    <!-- User Icon Group -->
+    <circle cx="50" cy="30" r="14" fill="#545B64"/>
+    <path d="M 28 62 C 28 48 40 46 50 46 C 60 46 72 48 72 62 Z" fill="#545B64"/>
+    <circle cx="82" cy="38" r="11" fill="#7D8998"/>
+    <path d="M 66 62 C 66 52 74 50 82 50 C 90 50 98 52 98 62 Z" fill="#7D8998"/>
+    <!-- Desktop / Mobile Device Schematic -->
+    <rect x="22" y="78" width="56" height="38" rx="3" fill="#FFFFFF" stroke="#232F3E" stroke-width="2"/>
+    <rect x="26" y="82" width="48" height="26" fill="#EAEDED"/>
+    <line x1="50" y1="116" x2="50" y2="124" stroke="#232F3E" stroke-width="2"/>
+    <line x1="38" y1="124" x2="62" y2="124" stroke="#232F3E" stroke-width="2"/>
+    <rect x="84" y="86" width="18" height="32" rx="3" fill="#FFFFFF" stroke="#232F3E" stroke-width="2"/>
+    <line x1="88" y1="89" x2="98" y2="89" stroke="#232F3E" stroke-width="1.5"/>
+
+    <text x="60" y="146" fill="#232F3E" font-size="13" font-weight="700" text-anchor="middle">Citizens &amp; Municipal</text>
+    <text x="60" y="162" fill="#545B64" font-size="12" text-anchor="middle">Authorities</text>
+    <text x="60" y="178" fill="#879596" font-size="11" text-anchor="middle">(Web / Mobile Browser)</text>
+  </g>
+
+  <!-- Step 1 Arrow & Badge -->
+  <line x1="135" y1="285" x2="235" y2="285" stroke="#232F3E" stroke-width="1.8" marker-end="url(#arrowDark)"/>
+  <g transform="translate(165, 252)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  </g>
+  <text x="176" y="302" fill="#545B64" font-size="11" font-style="italic" text-anchor="middle">HTTPS</text>
+
+  <!-- ========================================== -->
+  <!-- 2. AWS CLOUD BOUNDARY                      -->
+  <!-- ========================================== -->
+  <rect x="200" y="25" width="1490" height="1080" rx="4" fill="none" stroke="#232F3E" stroke-width="1.5"/>
+  <!-- AWS Cloud Header Badge -->
+  <rect x="200" y="25" width="38" height="24" rx="2" fill="#232F3E"/>
+  <text x="219" y="41" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">aws</text>
+  <text x="248" y="42" fill="#232F3E" font-size="15" font-weight="700">AWS Cloud</text>
+
+  <!-- Legend Badge -->
+  <g id="legendBar" transform="translate(1480, 38)">
+    <rect x="0" y="0" width="190" height="22" rx="3" fill="#F2F3F3" stroke="#D5DBDB" stroke-width="1"/>
+    <text x="95" y="15" fill="#545B64" font-size="10" font-weight="700" text-anchor="middle">AWS 2026 OFFICIAL STANDARD</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 3. REGION BOUNDARY (ap-south-1 Mumbai)     -->
+  <!-- ========================================== -->
+  <rect x="225" y="65" width="1440" height="1020" rx="4" fill="none" stroke="#0073BB" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <!-- Region Flag Badge -->
+  <rect x="225" y="65" width="26" height="24" fill="#0073BB"/>
+  <path d="M 232 72 L 242 76 L 232 80 Z" fill="#FFFFFF"/>
+  <line x1="232" y1="71" x2="232" y2="84" stroke="#FFFFFF" stroke-width="1.5"/>
+  <text x="261" y="82" fill="#0073BB" font-size="14" font-weight="700">Region: ap-south-1 (Mumbai)</text>
+
+  <!-- ========================================== -->
+  <!-- 4. S3 FRONTEND STATIC HOSTING BUCKET       -->
+  <!-- ========================================== -->
+  <g id="serviceS3Frontend" transform="translate(245, 105)">
+    <!-- Amazon S3 Official Icon -->
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#1B8C00" filter="url(#iconShadow)"/>
+    <path d="M 14 18 L 42 18 L 38 42 L 18 42 Z" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+    <ellipse cx="28" cy="18" rx="14" ry="4" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <ellipse cx="28" cy="26" rx="11" ry="3" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <ellipse cx="28" cy="34" rx="9" ry="2.5" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="2,2"/>
+
+    <!-- Labels -->
+    <text x="68" y="19" fill="#232F3E" font-size="14" font-weight="700">Amazon S3 (Frontend Bucket)</text>
+    <text x="68" y="34" fill="#545B64" font-size="11">Static Website Hosting (React 19 / Vite SPA)</text>
+    <text x="68" y="48" fill="#1B8C00" font-size="10" font-weight="600">apleshahar-frontend-852227600998-2026</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 5. EDGE & CONTENT DELIVERY (CLOUDFRONT)    -->
+  <!-- ========================================== -->
+  <g id="serviceCloudFront" transform="translate(245, 245)">
+    <!-- Amazon CloudFront Official Icon -->
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#8C4FFF" filter="url(#iconShadow)"/>
+    <!-- CloudFront Glyph -->
+    <circle cx="28" cy="28" r="16" fill="none" stroke="#FFFFFF" stroke-width="1.8"/>
+    <ellipse cx="28" cy="28" rx="7" ry="16" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+    <line x1="12" y1="28" x2="44" y2="28" stroke="#FFFFFF" stroke-width="1.5"/>
+    <circle cx="17" cy="18" r="2.5" fill="#FFFFFF"/>
+    <circle cx="39" cy="18" r="2.5" fill="#FFFFFF"/>
+    <circle cx="28" cy="40" r="2.5" fill="#FFFFFF"/>
+    <line x1="17" y1="18" x2="28" y2="28" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="39" y1="18" x2="28" y2="28" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="28" y1="40" x2="28" y2="28" stroke="#FFFFFF" stroke-width="1"/>
+
+    <!-- Labels -->
+    <text x="68" y="19" fill="#232F3E" font-size="14" font-weight="700">Amazon CloudFront</text>
+    <text x="68" y="35" fill="#545B64" font-size="11">Unified Edge CDN &amp; Reverse Proxy</text>
+    <text x="68" y="49" fill="#0073BB" font-size="11" font-weight="600">d1gbzyhd2sdjfm.cloudfront.net</text>
+  </g>
+
+  <!-- Step 2: CloudFront to S3 Frontend -->
+  <path d="M 273 245 L 273 170" fill="none" stroke="#1B8C00" stroke-width="1.8" marker-end="url(#arrowGreen)"/>
+  <g transform="translate(235, 195)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  </g>
+  <text x="300" y="210" fill="#1B8C00" font-size="11" font-style="italic">Default Path (/*)</text>
+
+  <!-- ========================================== -->
+  <!-- 6. VIRTUAL PRIVATE CLOUD (VPC) BOUNDARY    -->
+  <!-- ========================================== -->
+  <rect x="245" y="340" width="920" height="555" rx="4" fill="none" stroke="#1B8C00" stroke-width="1.5"/>
+  <!-- VPC Header Badge -->
+  <rect x="245" y="340" width="28" height="24" fill="#1B8C00"/>
+  <path d="M 251 356 C 250 353 252 349 255 349 C 256 347 259 346 262 347 C 264 345 267 347 268 349 C 271 349 272 353 271 356 Z" fill="#FFFFFF"/>
+  <text x="282" y="357" fill="#1B8C00" font-size="13" font-weight="700">Virtual Private Cloud (VPC)</text>
+  <text x="455" y="357" fill="#545B64" font-size="12">vpc-0004b4f628adae8df (CIDR: 10.0.0.0/16)</text>
+
+  <!-- Internet Gateway (IGW) -->
+  <g id="serviceIGW" transform="translate(265, 400)">
+    <rect x="0" y="0" width="48" height="48" rx="6" fill="#8C4FFF" filter="url(#iconShadow)"/>
+    <path d="M 12 38 L 12 18 C 12 12 36 12 36 18 L 36 38" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <line x1="16" y1="28" x2="32" y2="28" stroke="#FFFFFF" stroke-width="1.5"/>
+    <path d="M 24 16 L 24 38" stroke="#FFFFFF" stroke-width="1.5"/>
+
+    <text x="58" y="20" fill="#232F3E" font-size="12" font-weight="700">Internet Gateway</text>
+    <text x="58" y="34" fill="#545B64" font-size="10">apleshahar-igw</text>
+  </g>
+
+  <!-- Step 3: CloudFront to IGW to EC2 -->
+  <path d="M 273 301 L 273 392" fill="none" stroke="#ED7100" stroke-width="1.8" marker-end="url(#arrowOrange)"/>
+  <g transform="translate(285, 312)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  </g>
+  <text x="315" y="327" fill="#ED7100" font-size="11" font-weight="600" font-style="italic">/api/* Requests</text>
+
+  <!-- ========================================== -->
+  <!-- 7. AVAILABILITY ZONE 1 (ap-south-1a)       -->
+  <!-- ========================================== -->
+  <rect x="405" y="380" width="740" height="495" rx="4" fill="none" stroke="#0073BB" stroke-width="1.2" stroke-dasharray="5,4"/>
+  <text x="420" y="400" fill="#0073BB" font-size="12" font-weight="700">Availability Zone: ap-south-1a</text>
+
+  <!-- PUBLIC SUBNET -->
+  <rect x="425" y="415" width="700" height="195" rx="4" fill="#F2F8F9" stroke="#0073BB" stroke-width="1"/>
+  <!-- Subnet Padlock Badge -->
+  <rect x="425" y="415" width="22" height="20" fill="#0073BB"/>
+  <rect x="430" y="425" width="12" height="8" rx="1" fill="#FFFFFF"/>
+  <path d="M 432 425 L 432 421 C 432 419 440 419 440 421 L 440 425" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+  <text x="455" y="430" fill="#0073BB" font-size="12" font-weight="700">Public Subnet (Web / Compute Tier)</text>
+  <text x="680" y="430" fill="#545B64" font-size="11">apleshahar-public-1a (10.0.1.0/24)</text>
+
+  <!-- IGW to EC2 Connection Line -->
+  <path d="M 313 424 L 450 424 L 450 475" fill="none" stroke="#232F3E" stroke-width="1.5" marker-end="url(#arrowDark)"/>
+
+  <!-- EC2 Security Group Boundary -->
+  <rect x="440" y="445" width="670" height="150" rx="4" fill="#FFFFFF" stroke="#D9381E" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <text x="455" y="462" fill="#D9381E" font-size="11" font-weight="700">Security Group: apleshahar-ec2-sg (Inbound: 80, 443, 5000, 22)</text>
+
+  <!-- Amazon EC2 Instance -->
+  <g id="serviceEC2" transform="translate(455, 475)">
+    <!-- EC2 Official Icon -->
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#ED7100" filter="url(#iconShadow)"/>
+    <rect x="14" y="14" width="28" height="28" rx="2" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <circle cx="28" cy="28" r="5" fill="#FFFFFF"/>
+    <line x1="28" y1="8" x2="28" y2="14" stroke="#FFFFFF" stroke-width="2"/>
+    <line x1="28" y1="42" x2="28" y2="48" stroke="#FFFFFF" stroke-width="2"/>
+    <line x1="8" y1="28" x2="14" y2="28" stroke="#FFFFFF" stroke-width="2"/>
+    <line x1="42" y1="28" x2="48" y2="28" stroke="#FFFFFF" stroke-width="2"/>
+
+    <!-- Labels -->
+    <text x="68" y="19" fill="#232F3E" font-size="14" font-weight="700">Amazon EC2 (Backend REST API)</text>
+    <text x="68" y="35" fill="#545B64" font-size="11">Instance: apleshahar-backend-server (i-0260cf2d7f71c8832 | t3.micro)</text>
+    <text x="68" y="50" fill="#232F3E" font-size="11" font-weight="600">Public IP: 3.110.87.195 | Private IP: 10.0.1.205 | Docker Port 5000</text>
+    <text x="68" y="65" fill="#0073BB" font-size="11">Stateless Express.js API | pg Connection Pool | Native JWT Auth</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 8. PRIVATE SUBNETS (ISOLATED DATABASE)     -->
+  <!-- ========================================== -->
+  <rect x="425" y="635" width="700" height="225" rx="4" fill="#EBF5FA" stroke="#0073BB" stroke-width="1"/>
+  <!-- Subnet Padlock Badge (Private) -->
+  <rect x="425" y="635" width="22" height="20" fill="#0073BB"/>
+  <rect x="430" y="645" width="12" height="8" rx="1" fill="#FFFFFF"/>
+  <path d="M 432 645 L 432 641 C 432 639 440 639 440 641 L 440 645" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+  <text x="455" y="650" fill="#0073BB" font-size="12" font-weight="700">Private Subnets (Isolated Managed Database Tier - No IGW Route)</text>
+  <text x="455" y="666" fill="#545B64" font-size="11">apleshahar-private-1a (10.0.2.0/24) &amp; apleshahar-private-1b (10.0.3.0/24)</text>
+
+  <!-- RDS Security Group Boundary -->
+  <rect x="440" y="680" width="670" height="165" rx="4" fill="#FFFFFF" stroke="#D9381E" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <text x="455" y="697" fill="#D9381E" font-size="11" font-weight="700">Security Group: apleshahar-rds-sg (Ingress: Port 5432 ONLY from apleshahar-ec2-sg)</text>
+
+  <!-- Amazon RDS PostgreSQL Instance -->
+  <g id="serviceRDS" transform="translate(455, 710)">
+    <!-- RDS Official Icon -->
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#005276" filter="url(#iconShadow)"/>
+    <ellipse cx="28" cy="18" rx="15" ry="5" fill="none" stroke="#FFFFFF" stroke-width="1.8"/>
+    <path d="M 13 18 L 13 28 C 13 32 43 32 43 28 L 43 18" fill="none" stroke="#FFFFFF" stroke-width="1.8"/>
+    <path d="M 13 28 L 13 38 C 13 42 43 42 43 38 L 43 28" fill="none" stroke="#FFFFFF" stroke-width="1.8"/>
+    <circle cx="34" cy="30" r="2.5" fill="#FFFFFF"/>
+    <circle cx="22" cy="35" r="2.5" fill="#FFFFFF"/>
+
+    <!-- Labels -->
+    <text x="68" y="19" fill="#232F3E" font-size="14" font-weight="700">Amazon RDS PostgreSQL 16.10</text>
+    <text x="68" y="34" fill="#545B64" font-size="11">Instance: apleshahar-postgres (db.t3.micro, 20 GB gp3 SSD)</text>
+    <text x="68" y="49" fill="#005276" font-size="11" font-weight="600">apleshahar-postgres.claiyoqcgr10.ap-south-1.rds.amazonaws.com:5432</text>
+    <text x="68" y="64" fill="#232F3E" font-size="11">Public Access: NO | SSL Enforced | Tables: users, complaints, facility_requests</text>
+  </g>
+
+  <!-- Step 4: EC2 to RDS Connection -->
+  <line x1="510" y1="535" x2="510" y2="705" stroke="#0073BB" stroke-width="1.8" marker-end="url(#arrowBlue)"/>
+  <g transform="translate(525, 615)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">4</text>
+  </g>
+  <text x="555" y="630" fill="#0073BB" font-size="11" font-weight="600" font-style="italic">Port 5432 (SSL)</text>
+
+  <!-- ============================================================== -->
+  <!-- 9. STORAGE, SERVERLESS & MESSAGING TIER (REGION-LEVEL SERVICES)-->
+  <!-- ============================================================== -->
+  <rect x="1200" y="105" width="445" height="790" rx="4" fill="#FAFAFA" stroke="#545B64" stroke-width="1.2"/>
+  <text x="1220" y="132" fill="#232F3E" font-size="13" font-weight="700">Serverless &amp; Asynchronous Messaging Tier</text>
+
+  <!-- Amazon S3 Media Storage Bucket -->
+  <g id="serviceS3Media" transform="translate(1225, 155)">
+    <!-- S3 Icon -->
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#1B8C00" filter="url(#iconShadow)"/>
+    <path d="M 14 18 L 42 18 L 38 42 L 18 42 Z" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+    <ellipse cx="28" cy="18" rx="14" ry="4" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <ellipse cx="28" cy="26" rx="11" ry="3" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <ellipse cx="28" cy="34" rx="9" ry="2.5" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="2,2"/>
+
+    <text x="68" y="19" fill="#232F3E" font-size="14" font-weight="700">Amazon S3 (Media Storage)</text>
+    <text x="68" y="34" fill="#545B64" font-size="11">Bucket: apleshahar-media-76343</text>
+    <text x="68" y="48" fill="#1B8C00" font-size="10" font-weight="600">complaints/* (Originals) &amp; thumb-*</text>
+  </g>
+
+  <!-- Step 5: EC2 to S3 Media -->
+  <path d="M 1090 490 L 1180 490 L 1180 185 L 1220 185" fill="none" stroke="#1B8C00" stroke-width="1.8" marker-end="url(#arrowGreen)"/>
+  <g transform="translate(1120, 455)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">5</text>
+  </g>
+  <text x="1145" y="475" fill="#1B8C00" font-size="11" font-weight="600" font-style="italic">PutObject</text>
+
+  <!-- AWS Lambda Image Resizer -->
+  <g id="serviceLambda" transform="translate(1225, 345)">
+    <!-- Lambda Official Icon -->
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#ED7100" filter="url(#iconShadow)"/>
+    <path d="M 16 42 L 26 14 L 32 14 L 42 42 L 35 42 L 30 27 L 23 42 Z" fill="#FFFFFF"/>
+
+    <text x="68" y="18" fill="#232F3E" font-size="14" font-weight="700">AWS Lambda (Image Resizer)</text>
+    <text x="68" y="33" fill="#545B64" font-size="11">Function: ApleShahar-ImageResizer</text>
+    <text x="68" y="47" fill="#ED7100" font-size="10" font-weight="600">Node.js 20.x | 512 MB | Sharp Pipeline (~82% saving)</text>
+    <text x="68" y="61" fill="#545B64" font-size="10">Recursion Guard: Exits immediately on thumb-*</text>
+  </g>
+
+  <!-- Step 6: S3 Event Trigger to Lambda (Left Downward Arrow, cleanly inside box) -->
+  <path d="M 1290 215 L 1290 340" fill="none" stroke="#ED7100" stroke-width="1.8" marker-end="url(#arrowOrange)"/>
+  <g transform="translate(1235, 260)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">6</text>
+  </g>
+  <text x="1280" y="300" fill="#ED7100" font-size="10" font-weight="600" font-style="italic" text-anchor="end">s3:ObjectCreated:*</text>
+
+  <!-- Step 7: Lambda writes thumb-* back to S3 (Right Upward Arrow, cleanly separated) -->
+  <path d="M 1380 340 L 1380 220" fill="none" stroke="#1B8C00" stroke-width="1.8" marker-end="url(#arrowGreen)"/>
+  <g transform="translate(1390, 260)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">7</text>
+  </g>
+  <text x="1418" y="275" fill="#1B8C00" font-size="10" font-weight="600" font-style="italic">Write thumb-*</text>
+
+  <!-- Amazon SNS Topic -->
+  <g id="serviceSNS" transform="translate(1225, 490)">
+    <!-- SNS Official Icon -->
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#E7157B" filter="url(#iconShadow)"/>
+    <circle cx="28" cy="20" r="5" fill="#FFFFFF"/>
+    <circle cx="16" cy="38" r="4" fill="#FFFFFF"/>
+    <circle cx="28" cy="40" r="4" fill="#FFFFFF"/>
+    <circle cx="40" cy="38" r="4" fill="#FFFFFF"/>
+    <line x1="28" y1="25" x2="16" y2="34" stroke="#FFFFFF" stroke-width="1.5"/>
+    <line x1="28" y1="25" x2="28" y2="36" stroke="#FFFFFF" stroke-width="1.5"/>
+    <line x1="28" y1="25" x2="40" y2="34" stroke="#FFFFFF" stroke-width="1.5"/>
+
+    <text x="68" y="19" fill="#232F3E" font-size="14" font-weight="700">Amazon SNS (Decoupled Alerts)</text>
+    <text x="68" y="35" fill="#545B64" font-size="11">Topic: apleshahar-complaint-alerts</text>
+    <text x="68" y="50" fill="#E7157B" font-size="10" font-weight="600">Pub/Sub Fan-out: Municipal Grievance Redressal</text>
+  </g>
+
+  <!-- Step 8: EC2 publishes to SNS -->
+  <path d="M 1090 535 L 1195 535 L 1195 515 L 1220 515" fill="none" stroke="#E7157B" stroke-width="1.8" marker-end="url(#arrowMagenta)"/>
+  <g transform="translate(1120, 505)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">8</text>
+  </g>
+  <text x="1145" y="550" fill="#E7157B" font-size="10" font-weight="600" font-style="italic">Publish Alert</text>
+
+  <!-- Email Subscriber Destination -->
+  <g id="serviceEmail" transform="translate(1225, 625)">
+    <rect x="0" y="0" width="56" height="46" rx="4" fill="#FFFFFF" stroke="#0073BB" stroke-width="1.5"/>
+    <path d="M 6 10 L 28 26 L 50 10 Z" fill="#EBF5FA" stroke="#0073BB" stroke-width="1.5"/>
+    <line x1="6" y1="10" x2="6" y2="38" stroke="#0073BB" stroke-width="1.5"/>
+    <line x1="50" y1="10" x2="50" y2="38" stroke="#0073BB" stroke-width="1.5"/>
+    <line x1="6" y1="38" x2="50" y2="38" stroke="#0073BB" stroke-width="1.5"/>
+
+    <text x="68" y="18" fill="#232F3E" font-size="13" font-weight="700">Notification Subscriber (Email)</text>
+    <text x="68" y="34" fill="#0073BB" font-size="11" font-weight="600">apatade76@gmail.com (Status: Confirmed)</text>
+    <text x="68" y="48" fill="#545B64" font-size="10">Instant transactional delivery to Ward Officers</text>
+  </g>
+
+  <!-- Step 9: SNS to Email Subscriber -->
+  <line x1="1285" y1="550" x2="1285" y2="620" stroke="#0073BB" stroke-width="1.8" marker-end="url(#arrowBlue)"/>
+  <g transform="translate(1255, 575)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">9</text>
+  </g>
+  <text x="1295" y="590" fill="#0073BB" font-size="10" font-weight="600" font-style="italic">Email Delivery</text>
+
+  <!-- CloudWatch Logs for Lambda -->
+  <g id="serviceCWLogs" transform="translate(1225, 735)">
+    <rect x="0" y="0" width="48" height="48" rx="6" fill="#CC2264" filter="url(#iconShadow)"/>
+    <circle cx="24" cy="24" r="14" fill="none" stroke="#FFFFFF" stroke-width="1.8"/>
+    <path d="M 18 28 L 22 22 L 26 26 L 30 18" fill="none" stroke="#FFFFFF" stroke-width="1.8"/>
+
+    <text x="58" y="20" fill="#232F3E" font-size="12" font-weight="700">CloudWatch Logs</text>
+    <text x="58" y="35" fill="#545B64" font-size="10">/aws/lambda/ApleShahar-ImageResizer</text>
+    <text x="58" y="48" fill="#879596" font-size="10">Function telemetry &amp; execution traces</text>
+  </g>
+  <!-- Path around right side from Lambda to CWLogs -->
+  <path d="M 1540 375 L 1610 375 L 1610 760 L 1480 760" fill="none" stroke="#CC2264" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrowRed)"/>
+
+  <!-- ============================================================== -->
+  <!-- 10. MANAGEMENT, SECURITY & OBSERVABILITY BAR (BOTTOM)          -->
+  <!-- ============================================================== -->
+  <rect x="245" y="920" width="1400" height="145" rx="4" fill="#F8F9FA" stroke="#545B64" stroke-width="1.2"/>
+  <text x="265" y="945" fill="#232F3E" font-size="13" font-weight="700">Security, Secrets Management &amp; Operational Observability</text>
+
+  <!-- AWS Systems Manager Parameter Store -->
+  <g id="serviceSSM" transform="translate(265, 965)">
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#C925D1" filter="url(#iconShadow)"/>
+    <rect x="12" y="16" width="32" height="6" rx="2" fill="#FFFFFF"/>
+    <circle cx="22" cy="19" r="5" fill="#232F3E" stroke="#FFFFFF" stroke-width="2"/>
+    <rect x="12" y="34" width="32" height="6" rx="2" fill="#FFFFFF"/>
+    <circle cx="34" cy="37" r="5" fill="#232F3E" stroke="#FFFFFF" stroke-width="2"/>
+
+    <text x="68" y="18" fill="#232F3E" font-size="13" font-weight="700">AWS SSM Parameter Store</text>
+    <text x="68" y="33" fill="#545B64" font-size="11">Path: /apleshahar/* (11 KMS-encrypted parameters)</text>
+    <text x="68" y="47" fill="#C925D1" font-size="10" font-weight="600">Zero secrets stored on disk | Runtime IAM injection</text>
+  </g>
+
+  <!-- Step 10: EC2 fetches secrets from SSM at boot -->
+  <path d="M 470 535 L 470 960" fill="none" stroke="#C925D1" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowDark)"/>
+  <g transform="translate(425, 865)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">10</text>
+  </g>
+  <text x="475" y="880" fill="#C925D1" font-size="10" font-weight="600" font-style="italic">GetParametersByPath</text>
+
+  <!-- Amazon CloudWatch Alarm -->
+  <g id="serviceCloudWatch" transform="translate(685, 965)">
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#CC2264" filter="url(#iconShadow)"/>
+    <circle cx="28" cy="28" r="16" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <line x1="28" y1="28" x2="38" y2="20" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="28" cy="28" r="3" fill="#FFFFFF"/>
+
+    <text x="68" y="18" fill="#232F3E" font-size="13" font-weight="700">Amazon CloudWatch Alarm</text>
+    <text x="68" y="33" fill="#545B64" font-size="11">Alarm: EC2-HighCPU-Alarm (Threshold: CPU &gt; 75%)</text>
+    <text x="68" y="47" fill="#CC2264" font-size="10" font-weight="600">Automated SNS Alert on infrastructure stress</text>
+  </g>
+
+  <!-- Step 11: CloudWatch Alarm to SNS (cleanly routed above bottom border) -->
+  <path d="M 740 965 L 740 895 L 1180 895 L 1180 540 L 1220 540" fill="none" stroke="#CC2264" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowRed)"/>
+  <g transform="translate(860, 870)">
+    <rect x="0" y="0" width="22" height="22" rx="4" fill="#0073BB"/>
+    <text x="11" y="16" fill="#FFFFFF" font-size="12" font-weight="700" text-anchor="middle">11</text>
+  </g>
+  <text x="890" y="885" fill="#CC2264" font-size="10" font-weight="600" font-style="italic">Alarm Action -> SNS</text>
+
+  <!-- AWS IAM (Least Privilege) -->
+  <g id="serviceIAM" transform="translate(1125, 965)">
+    <rect x="0" y="0" width="56" height="56" rx="6" fill="#DD344C" filter="url(#iconShadow)"/>
+    <rect x="14" y="16" width="28" height="24" rx="2" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <circle cx="28" cy="24" r="4" fill="#FFFFFF"/>
+    <path d="M 22 34 C 22 30 34 30 34 34" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+
+    <text x="68" y="18" fill="#232F3E" font-size="13" font-weight="700">AWS Identity &amp; Access Management (IAM)</text>
+    <text x="68" y="33" fill="#545B64" font-size="11">Roles: ApleShahar-EC2-BackendRole (IMDSv2) &amp; LambdaExecutionRole</text>
+    <text x="68" y="47" fill="#DD344C" font-size="10" font-weight="600">Group Developers: Team user accounts (arlen, hansy) under alias cclmp-apleshahar</text>
+  </g>
+</svg>
