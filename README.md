@@ -4,50 +4,48 @@ This repository contains the full-stack cloud-native codebase for **ApleShahar**
 
 - **Frontend**: React 19 + Vite Single Page Application (`frontend/`)
 - **Backend**: Containerized Node.js 20 + Express REST API (`backend/`)
-- **Cloud Infrastructure**: AWS Native Architecture in `ap-south-1` (Mumbai) across VPC, EC2, RDS PostgreSQL, S3, CloudFront CDN, Lambda, SNS, SSM Parameter Store, IAM, and CloudWatch.
+- **Cloud Infrastructure**: Native AWS architecture in `ap-south-1` (Mumbai) across VPC, EC2, RDS PostgreSQL, S3, CloudFront CDN, Lambda, SNS, SSM Parameter Store, IAM, and CloudWatch.
 
 ---
 
-## Documentation Index
+## 📖 Comprehensive Documentation (Single Source of Truth)
 
-- **System Architecture Specification & Diagrams**: [`aws_mig_plan/ARCHITECTURE_DIAGRAM.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/ARCHITECTURE_DIAGRAM.md)
-- **Live AWS Infrastructure & Resource Inventory**: [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md)
-- **End-to-End Demonstration Procedure**: [`aws_mig_plan/DEMO_PROCEDURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/DEMO_PROCEDURE.md)
-- **AWS Services Technical Reference**: [`aws_mig_plan/AWS_SERVICES_OVERVIEW.txt`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/AWS_SERVICES_OVERVIEW.txt)
-- **Deployment & Verification Guide**: [`DEPLOYMENT_GUIDE.md`](file:///C:/Users/arnav/Desktop/cclmp/DEPLOYMENT_GUIDE.md)
+All architectural specifications, problem statements, application workflows, AWS service technical deep-dives, live infrastructure inventories, deployment guides, and demonstration procedures are consolidated into:
+
+👉 **[Master System Documentation & Infrastructure Specification (`docs/README.md`)](docs/README.md)**
 
 ---
 
 ## Directory Structure
 
 ```text
-cclmp/
-├── frontend/             # React 19 + Vite client application
-│   ├── src/
-│   ├── .env.example
+CCLMP/
+├── frontend/             # React 19 + Vite Single Page Application (Port 5173)
+│   ├── src/              # UI Components, centralized API client, router
+│   ├── .env.example      # Frontend environment template
 │   └── package.json
 ├── backend/              # Node.js 20 + Express API server (Port 5000)
-│   ├── config/           # PostgreSQL connection pool and runtime secrets
+│   ├── config/           # PostgreSQL pool with auto-schema DDL & SSM parameter loader
 │   ├── controllers/      # Route controllers (Auth, Complaints, Facility)
-│   ├── routes/           # Express API routes
+│   ├── routes/           # Express REST endpoints (/api/auth, /api/complaints, etc.)
 │   ├── services/         # S3 Upload, SNS Notifications, DB Queries
 │   ├── scripts/          # Database schema initialization & verification
 │   ├── Dockerfile        # Production Docker container
 │   ├── docker-compose.yml# Container orchestration
 │   └── package.json
-├── aws_mig_plan/         # AWS cloud infrastructure scripts and diagrams
+├── docs/                 # Single Source of Truth Documentation & Cloud Assets
+│   ├── README.md         # Master System & Infrastructure Specification
 │   ├── deploy-infra.ps1  # Automated AWS CLI infrastructure provisioner (PowerShell)
 │   ├── deploy-infra.sh   # Automated AWS CLI infrastructure provisioner (Bash)
-│   ├── create-iam-users.ps1 # Team IAM account creation script
 │   ├── cleanup.ps1       # Automated resource teardown script
+│   ├── create-iam-users.ps1 # Team IAM user provisioning
 │   ├── lambda/           # Serverless image resizer (Node.js 20.x, Sharp)
-│   ├── diagramrefs/      # Official AWS Architecture diagrams (PNG, SVG, HTML)
-│   ├── LIVE_INFRASTRUCTURE.md
-│   ├── DEMO_PROCEDURE.md
-│   └── ARCHITECTURE_DIAGRAM.md
-├── DEPLOYMENT_GUIDE.md   # Step-by-step deployment instructions
-├── package.json          # Root workspace scripts
-└── README.md
+│   ├── architecture.mmd  # Mermaid architecture source
+│   ├── architecture_diagram.png # High-resolution architecture blueprint
+│   ├── architecture_diagram.svg # Scalable vector architecture diagram
+│   └── diagramrefs/      # Visual architecture diagrams and reference exports
+├── package.json          # Root workspace coordination scripts
+└── README.md             # Project landing page & quickstart
 ```
 
 ---
@@ -78,9 +76,9 @@ Or run individually:
 
 ---
 
-## Cloud Deployment (AWS)
+## Cloud Deployment & Operations
 
-To review and deploy the live infrastructure on AWS:
-1. Review the provisioned resource endpoints in [`aws_mig_plan/LIVE_INFRASTRUCTURE.md`](file:///C:/Users/arnav/Desktop/cclmp/aws_mig_plan/LIVE_INFRASTRUCTURE.md).
-2. Follow [`DEPLOYMENT_GUIDE.md`](file:///C:/Users/arnav/Desktop/cclmp/DEPLOYMENT_GUIDE.md) to launch the backend container on EC2.
-3. Deploy the thumbnail generator in `aws_mig_plan/lambda/` to AWS Lambda.
+To provision infrastructure, launch containers on EC2, configure Lambda, and run verification:
+1. Follow the step-by-step instructions in **[docs/README.md - Section 7: Complete Deployment Guide](docs/README.md#7-complete-deployment--infrastructure-provisioning-guide)**.
+2. Review live cloud endpoints in **[docs/README.md - Section 6: Live AWS Infrastructure Inventory](docs/README.md#6-live-aws-infrastructure--resource-inventory)**.
+3. Conduct technical evaluation using **[docs/README.md - Section 8: Demonstration & Verification Procedure](docs/README.md#8-end-to-end-demonstration--verification-procedure)**.
