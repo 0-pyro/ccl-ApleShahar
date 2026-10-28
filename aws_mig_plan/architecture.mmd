@@ -1,0 +1,66 @@
+flowchart TD
+    User["Citizen / Municipal Authority Client"]
+
+    subgraph EdgeLayer["Edge Delivery Layer (Amazon CloudFront CDN)"]
+        CF["CloudFront Distribution (d1gbzyhd2sdjfm.cloudfront.net)<br/>ID: E173DOOWG8BGP2 | SSL/HTTPS"]
+    end
+
+    subgraph StorageLayer["Object Storage Layer (Amazon S3)"]
+        S3Web["Frontend Static Hosting Bucket<br/>(apleshahar-frontend-852227600998-2026)<br/>React 19 SPA Assets"]
+        S3Media["Media Storage Bucket<br/>(apleshahar-media-76343)<br/>Original Photos and Thumbnails"]
+    end
+
+    subgraph VPC["Custom AWS VPC (vpc-0004b4f628adae8df | 10.0.0.0/16)"]
+        IGW["Internet Gateway<br/>(apleshahar-igw)"]
+
+        subgraph PublicSubnet["Public Subnet (apleshahar-public-1a | 10.0.1.0/24)"]
+            EC2SG["EC2 Security Group (sg-062252861b7de2668)<br/>Inbound: 80, 443, 22, 5000"]
+            EC2["Amazon EC2 Backend Instance (i-0260cf2d7f71c8832)<br/>t3.micro | Ubuntu 24.04 LTS | 3.110.87.195<br/>Docker: apleshahar-backend (Node.js 20)"]
+        end
+
+        subgraph PrivateSubnets["Private Subnets (Isolated Database Tier)"]
+            subgraph Priv1["apleshahar-private-1a (10.0.2.0/24)"]
+                RDSSG["RDS Security Group (sg-0b9bde57f8c29bfdc)<br/>Inbound: Port 5432 from EC2 SG only"]
+            end
+            subgraph Priv2["apleshahar-private-1b (10.0.3.0/24)"]
+                DBSubnets["DB Subnet Group<br/>(apleshahar-db-subnets)"]
+            end
+            RDS[("Amazon RDS PostgreSQL 16.10 (db.t3.micro)<br/>Single-AZ: apleshahar-postgres<br/>Public Access: NO | SSL Enforced")]
+        end
+    end
+
+    subgraph ServerlessAsync["Serverless Compute and Messaging"]
+        Lambda["AWS Lambda Resizer (ApleShahar-ImageResizer)<br/>Node.js 20.x | 512 MB | Sharp Pipeline"]
+        SNS["Amazon SNS Topic<br/>(apleshahar-complaint-alerts)"]
+        EmailSub["Authority / Admin Email<br/>(apatade76@gmail.com)"]
+    end
+
+    subgraph ManagementSecurity["Security, Secrets and Monitoring"]
+        SSM["AWS SSM Parameter Store<br/>(/apleshahar/* - 11 KMS Encrypted Parameters)"]
+        IAM["IAM Instance Profile<br/>(ApleShahar-EC2-BackendRole)"]
+        CWAlarm["CloudWatch Alarm<br/>(EC2-HighCPU-Alarm > 75%)"]
+        CWLogs["CloudWatch Logs<br/>(/aws/lambda/ApleShahar-ImageResizer)"]
+    end
+
+    User -->|"HTTPS (Port 443)"| CF
+    CF -->|"Default path (*)"| S3Web
+    CF -->|"/complaints/* (Edge Cached)"| S3Media
+    CF -->|"/api/* (Dynamic Pass-Through)"| IGW
+    IGW --> EC2SG
+    EC2SG --> EC2
+
+    EC2 -->|"SQL queries (Port 5432, SSL)"| RDSSG
+    RDSSG --> RDS
+
+    EC2 -->|"Stream complaint photos (PutObject)"| S3Media
+    S3Media -->|"s3:ObjectCreated:* event trigger"| Lambda
+    Lambda -->|"Write thumb-* (82% compression)"| S3Media
+
+    EC2 -->|"Publish event (new complaint / resolved)"| SNS
+    CWAlarm -->|"State change action (CPU > 75%)"| SNS
+    SNS -->|"Transactional email"| EmailSub
+
+    EC2 -.->|"Load /apleshahar/* secrets at boot"| SSM
+    EC2 -.->|"Temporary STS credentials (IMDSv2)"| IAM
+    EC2 -.->|"Continuous CPU metrics push"| CWAlarm
+    Lambda -.->|"Execution telemetry"| CWLogs
